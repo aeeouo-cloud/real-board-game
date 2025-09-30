@@ -472,8 +472,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78bf153bf208cf74e9e328bcba9a1a5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Hex: {fileID: 4632384364136217002, guid: 34ab31839ac83a94da711739626ba7e3, type: 3}
-  widthlength: 5
+  Hex: {fileID: 2436724651496488042, guid: 36c91f952da18c745b439321d6c43012, type: 3}
+  widthlength: 10
 --- !u!4 &1806354151
 Transform:
   m_ObjectHideFlags: 0
