@@ -1,4 +1,4 @@
-// CardEffectResolver.cs
+ï»¿// CardEffectResolver.cs
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -6,87 +6,146 @@ using System;
 
 public class CardEffectResolver : MonoBehaviour
 {
-    // Ä«µå »ç¿ë ½Ã È£ÃâµÇ´Â ÁÖ ÁøÀÔÁ¡ ÇÔ¼ö
+    // ğŸš¨ 1. Inspectorì— í…ŒìŠ¤íŠ¸ IDë¥¼ ì…ë ¥í•  ìˆ˜ ìˆëŠ” í•„ë“œ ì¶”ê°€ ğŸš¨
+    public string TestCardID = "N002"; // íŠ¸ë© ì„¤ì¹˜ ì¹´ë“œ IDë¡œ ì´ˆê¸° ì„¤ì •
+
+    // ğŸš¨ ê³µê²© í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•œ ì„ì‹œ ì  ìœ ë‹› ë³€ìˆ˜ ì¶”ê°€ ğŸš¨
+    public Unit EnemyTarget; // Inspectorì—ì„œ EnemyUnit ì˜¤ë¸Œì íŠ¸ë¥¼ ì—¬ê¸°ì— ì—°ê²°í•©ë‹ˆë‹¤. 
+
+    // ğŸš¨ 2. Inspectorì— ë²„íŠ¼ì„ ìƒì„±í•˜ëŠ” ì†ì„± ì¶”ê°€ ğŸš¨
+    [ContextMenu("Execute Test Card")]
+    public void TestManualExecution()
+    {
+        if (!string.IsNullOrEmpty(TestCardID))
+        {
+            ExecuteCardEffect(TestCardID);
+        }
+        else
+        {
+            Debug.LogError("í…ŒìŠ¤íŠ¸ ì¹´ë“œ IDë¥¼ ì…ë ¥í•´ ì£¼ì„¸ìš”.");
+        }
+    }
+
+    // ì¹´ë“œ ì‚¬ìš© ì‹œ í˜¸ì¶œë˜ëŠ” ì£¼ ì§„ì…ì  í•¨ìˆ˜
     public void ExecuteCardEffect(string cardID)
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogError("DataManager°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("DataManagerê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // CardData Å¬·¡½º ÂüÁ¶
+        // CardData í´ë˜ìŠ¤ ì°¸ì¡°
         if (!DataManager.Instance.CardTable.TryGetValue(cardID, out CardData cardData))
         {
-            Debug.LogError($"Card ID¸¦ Ã£À» ¼ö ¾øÀ½: {cardID}");
+            Debug.LogError($"Card IDë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ: {cardID}");
+            return;
+        }
+
+        // ğŸš¨ ì½”ìŠ¤íŠ¸ ì²´í¬ (GameManagerì— TryUseCost ë¡œì§ì´ ìˆë‹¤ê³  ê°€ì •í•˜ê³  ì¶”ê°€) ğŸš¨
+        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(cardData.cost))
+        {
+            Debug.LogWarning($"ì¹´ë“œ ì‚¬ìš© ì‹¤íŒ¨: ì½”ìŠ¤íŠ¸ ë¶€ì¡± ({cardData.name})");
             return;
         }
 
         string effectGroupID = cardData.EffectGroup_ID;
 
-        // CardEffectSequenceData Å¬·¡½º ÂüÁ¶
+        // CardEffectSequenceData í´ë˜ìŠ¤ ì°¸ì¡°
         if (!DataManager.Instance.EffectSequenceTable.TryGetValue(effectGroupID, out List<CardEffectSequenceData> sequenceList))
         {
-            Debug.LogError($"EffectGroup ID¸¦ Ã£À» ¼ö ¾øÀ½: {effectGroupID}");
+            Debug.LogError($"EffectGroup IDë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ: {effectGroupID}");
             return;
         }
 
-        Debug.Log($"--- {cardData.name} Ä«µåÀÇ È¿°ú ½ÇÇà ½ÃÀÛ (ID: {cardID}) ---");
+        Debug.Log($"--- {cardData.name} ì¹´ë“œì˜ íš¨ê³¼ ì‹¤í–‰ ì‹œì‘ (ID: {cardID}) ---");
 
         foreach (var step in sequenceList)
         {
-            // CardParameterDetailsData Å¬·¡½º ÂüÁ¶
+            // CardParameterDetailsData í´ë˜ìŠ¤ ì°¸ì¡°
             DataManager.Instance.ParameterDetailTable.TryGetValue(step.EffectStep_PK, out List<CardParameterDetailsData> parameters);
 
             ExecuteEffectLogic(step.EffectCode, parameters);
         }
 
-        Debug.Log($"--- {cardData.name} Ä«µåÀÇ È¿°ú ½ÇÇà ¿Ï·á ---");
+        Debug.Log($"--- {cardData.name} ì¹´ë“œì˜ íš¨ê³¼ ì‹¤í–‰ ì™„ë£Œ ---");
     }
 
-    // EffectCode¿¡ µû¶ó ½ÇÁ¦ °ÔÀÓ ·ÎÁ÷À» ½ÇÇàÇÏ´Â ÇÙ½É ÇÔ¼ö
-    private void ExecuteEffectLogic(string effectCode, List<CardParameterDetailsData> parameters) 
+    // Helper í•¨ìˆ˜: íŒŒë¼ë¯¸í„° ë”•ì…”ë„ˆë¦¬ì—ì„œ í‚¤ë¥¼ ì°¾ê³ , ì°¾ì§€ ëª»í•˜ê±°ë‚˜ í˜•ì‹ì´ í‹€ë¦¬ë©´ 0ì„ ë°˜í™˜
+    private int GetIntParam(Dictionary<string, string> dict, string key)
+    {
+        if (dict.TryGetValue(key, out string valueStr) && int.TryParse(valueStr, out int value))
+        {
+            return value;
+        }
+        return 0;
+    }
+
+    // EffectCodeì— ë”°ë¼ ì‹¤ì œ ê²Œì„ ë¡œì§ì„ ì‹¤í–‰í•˜ëŠ” í•µì‹¬ í•¨ìˆ˜
+    private void ExecuteEffectLogic(string effectCode, List<CardParameterDetailsData> parameters)
     {
         Dictionary<string, string> paramDict = parameters?.ToDictionary(p => p.ParameterKey, p => p.ParameterValue)
-                                                ?? new Dictionary<string, string>();
+                                                            ?? new Dictionary<string, string>();
 
-        // µğ¹ö±× ·Î±×°¡ Ãâ·ÂµÉ °Í
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager ì¸ìŠ¤í„´ìŠ¤ê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            return;
+        }
+
+        // ê¸°ë³¸ ëŒ€ìƒì€ PlayerUnitìœ¼ë¡œ ì„¤ì • (í/ì´ë™ ë“±)
+        Unit target = GameManager.Instance.PlayerUnit;
+        if (target == null)
+        {
+            Debug.LogError("PlayerUnitì´ GameManagerì˜ Inspector í•„ë“œì— ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            // return; // ê³µê²© ì‹œì—ëŠ” EnemyTargetì„ ì‚¬ìš©í•  ê²ƒì´ë¯€ë¡œ ì£¼ì„ ì²˜ë¦¬
+        }
+
+        // EffectCodeì— ë”°ë¼ ë¡œì§ ë¶„ê¸° ë° ì—°ê²°
         switch (effectCode)
         {
             case "ATTACK_SINGLE":
-                if (!paramDict.TryGetValue("MAX_RANGE", out string rangeStr) || !paramDict.TryGetValue("DAMAGE_AMOUNT", out string damageStr))
+            case "ATTACK_CONDITIONAL":
+                int range = GetIntParam(paramDict, "MAX_RANGE");
+                int damage = GetIntParam(paramDict, "DAMAGE_AMOUNT");
+
+                // ğŸš¨ ê³µê²© ëŒ€ìƒ ì§€ì •: EnemyTarget ì‚¬ìš© ğŸš¨
+                Unit attackTarget = EnemyTarget;
+
+                if (attackTarget != null)
                 {
-                    Debug.LogError($"ATTACK_SINGLE: ÇÊ¼ö ÆÄ¶ó¹ÌÅÍ ´©¶ôµÊ.");
-                    return;
+                    GameManager.Instance.ApplyAttack(attackTarget, damage, range);
                 }
-                if (int.TryParse(rangeStr, out int range) && int.TryParse(damageStr, out int damage))
+                else
                 {
-                    Debug.Log($"[·ÎÁ÷ ½ÇÇà] ATTACK_SINGLE: »ç°Å¸® {range}, µ¥¹ÌÁö {damage} Àû¿ë");
+                    Debug.LogError("[Attack Test] EnemyTarget ë³€ìˆ˜ì— ê³µê²©í•  ìœ ë‹›ì„ ì—°ê²°í•´ ì£¼ì„¸ìš”.");
                 }
                 break;
 
             case "DRAW_CARD_SELF":
-                if (!paramDict.TryGetValue("AMOUNT", out string amountStr) || !int.TryParse(amountStr, out int amount))
-                {
-                    Debug.LogError($"DRAW_CARD_SELF: ÇÊ¼ö ÆÄ¶ó¹ÌÅÍ(AMOUNT) ´©¶ô ¶Ç´Â ¿À·ù.");
-                    return;
-                }
-                Debug.Log($"[·ÎÁ÷ ½ÇÇà] DRAW_CARD_SELF: Ä«µå {amount}Àå µå·Î¿ì");
+                int drawAmount = GetIntParam(paramDict, "AMOUNT");
+                GameManager.Instance.ProcessDraw(drawAmount);
                 break;
 
             case "HEAL_HP":
-                if (!paramDict.TryGetValue("AMOUNT", out string healStr) || !int.TryParse(healStr, out int healAmount))
-                {
-                    Debug.LogError($"HEAL_HP: ÇÊ¼ö ÆÄ¶ó¹ÌÅÍ(AMOUNT) ´©¶ô ¶Ç´Â ¿À·ù.");
-                    return;
-                }
-                Debug.Log($"[·ÎÁ÷ ½ÇÇà] HEAL_HP: Ã¼·Â {healAmount} È¸º¹");
+                int healAmount = GetIntParam(paramDict, "AMOUNT");
+                GameManager.Instance.ProcessHeal(target, healAmount);
+                break;
+
+            case "MOVE_SELF":
+                int moveDistance = GetIntParam(paramDict, "DISTANCE");
+                GameManager.Instance.ProcessMove(target, moveDistance);
+                break;
+
+            case "PLACE_TRAP":
+                int trapRange = GetIntParam(paramDict, "MAX_RANGE");
+                int slowAmount = GetIntParam(paramDict, "SLOW_AMOUNT");
+                GameManager.Instance.PlaceTrap(trapRange, slowAmount);
                 break;
 
             default:
-                Debug.LogWarning($"¾Ë ¼ö ¾ø´Â EffectCode: {effectCode}. ÇØ´ç ·ÎÁ÷ ±¸ÇöÀÌ ÇÊ¿äÇÕ´Ï´Ù.");
+                Debug.LogWarning($"ì•Œ ìˆ˜ ì—†ëŠ” EffectCode: {effectCode}. í•´ë‹¹ ë¡œì§ êµ¬í˜„ì´ í•„ìš”í•©ë‹ˆë‹¤.");
                 break;
         }
     }
 }
-

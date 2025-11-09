@@ -32,16 +32,23 @@ public class DataManager : MonoBehaviour
 
     private void LoadAllGameData()
     {
-        // 1. CardTable 로드
-        CardTable = LoadTable<CardData>("CardData").ToDictionary(data => data.card_ID, data => data);
+        // 1. CardTable 로드: Card ID가 Null이거나 비어있는 행은 무시합니다.
+        CardTable = LoadTable<CardData>("CardData")
+            // 🚨 Null 키 방지 코드 추가 🚨
+            .Where(data => !string.IsNullOrEmpty(data.card_ID))
+            .ToDictionary(data => data.card_ID, data => data);
 
-        // 2. EffectSequenceTable 로드
+        // 2. EffectSequenceTable 로드: EffectGroup_ID가 Null이거나 비어있는 행은 무시합니다.
         EffectSequenceTable = LoadTable<CardEffectSequenceData>("CardEffectSequence")
+            // 🚨 Null 키 방지 코드 추가 🚨
+            .Where(data => !string.IsNullOrEmpty(data.EffectGroup_ID))
             .GroupBy(data => data.EffectGroup_ID)
             .ToDictionary(g => g.Key, g => g.OrderBy(x => x.sequence).ToList());
 
-        // 3. ParameterDetailTable 로드
+        // 3. ParameterDetailTable 로드: EffectStep_PK가 Null이거나 비어있는 행은 무시합니다.
         ParameterDetailTable = LoadTable<CardParameterDetailsData>("CardParameterDetails")
+            // 🚨 Null 키 방지 코드 추가 🚨
+            .Where(data => !string.IsNullOrEmpty(data.EffectStep_PK))
             .GroupBy(data => data.EffectStep_PK)
             .ToDictionary(g => g.Key, g => g.ToList());
 
