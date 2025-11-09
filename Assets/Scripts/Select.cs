@@ -3,11 +3,10 @@ using UnityEngine;
 
 public class Select : MonoBehaviour
 {
-    public GameObject mapmanager;
     public float x;
     List<List<int>> set = new List<List<int>>();
 
-    public List<Vector2> GetCoordinate(int range, Vector2 origin)
+    public List<Vector2Int> GetCoordinate(int range, Vector2Int origin)
     {
         for (int i = 0; i < range; range--)
         {
@@ -22,12 +21,12 @@ public class Select : MonoBehaviour
                 }
             }
         }
-        List<Vector2> select = new List<Vector2>();
+        List<Vector2Int> select = new List<Vector2Int>();
         foreach (List<int> argument in set)
         {
-            select.Add(new Vector2(origin.x + argument[0], origin.y + argument[1]));
+            select.Add(new Vector2Int(origin.x + argument[0], origin.y + argument[1]));
         }
-        Debug.Log(set[0][0]);
+        
         return select;
     }
 }

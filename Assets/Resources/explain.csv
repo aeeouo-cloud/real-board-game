@@ -1,0 +1,18 @@
+﻿필드명,DataType,길이 / 속성,Description,예시
+CARD_ID,VARCHAR,Primary Key,카드를 구분하는 고유한 식별자,"N001,S001"
+type,VARCHAR,ENUM,"카드의 종류(공격, 행동, 함정 등)","attack, action"
+class,VARCHAR,ENUM,카드의 소속 클래스,"swordman,rogue"
+cost,INT,Range(0-30),카드를 사용하기 위한 코스트,"1,2,3"
+name,VARCHAR,VARCHAR(50),카드의 이름,돌멩이 투척
+Description,TEXT,NOT NULL ,인게임에 들어갈 카드 능력,사거리 : 2 데미지 : 1
+EffectGroup_ID,VARCHAR,Foreign Key,카드의 능력을 묶을때 사용하는 필드,N001_FX
+Sequence,INT,NOT NULL / PK구성,"복합 효과가 발동되는 순서를 정의하는 필드 , EffectGroup_ID와 복합키를 이룬다",1
+EffectStep_PK,VARCHAR,Primary Key,CardEffectSequence 테이블의 각 단계를 유일하게 식별하는 키,ES_N001_1
+EffectCode,VARCHAR,ENUM,카드가 실행할 특정 로직의 고유한 명령어 이름,MAX_RANGE
+CodeDescription,VARCHAR,NOT NULL,이 로직이 실제로 무엇을 하는지 설명,
+TargetType,VARCHAR,ENUM / NOT NULL,로직이 누구에게 발동될 수 있는지의 제약 조건,ENEMY
+ParameterKey_1,VARCHAR,Foreign Key,로직 실행에 필수적인 첫 번째 인자의 이름,MAX_RANGE
+ParameterKey_2,VARCHAR,Foreign Key,로직 실행에 필수적인 두 번째 인자의 이름,DAMAGE_AMOUNT
+EffectStep_PK,VARCHAR,Primary Key,카드의 발동 순서와 능력치를 연결해주는 연결고리,ES_N001_1
+ParameterKey,VARCHAR,Primary Key,로직 실행에 필요한 인자의 표준화된 이름,"range, damage"
+ParameterValue,INT/VARCHAR,NONE,인자 값의 실제 수치,"1,2,3"
