@@ -11,7 +11,7 @@ public class CardData // 파일명: CardData.cs
     public string @class;
     public string name;
     public string Description;
-    public int cost;
+    public string cost;
     public string EffectGroup_ID;
 
     // 스탯 필드 (CSV에서 Int로 변환될 예정)
@@ -23,10 +23,4 @@ public class CardData // 파일명: CardData.cs
     public int Wall_DUR;
     public int Wall_AMT;
     public int Heal;
-    public string Special_Flag;
-    public int Special_AMT;
-    public int Special_DUR;
-    public string CONDITION;
-    public string IH_CARD_ID;
-    public string STATUS;
 }
