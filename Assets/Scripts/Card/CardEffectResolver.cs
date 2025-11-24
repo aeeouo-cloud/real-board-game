@@ -6,6 +6,24 @@ using System;
 
 public class CardEffectResolver : MonoBehaviour
 {
+    // 🚨 1. 정적(static) Instance 변수 추가 🚨
+    public static CardEffectResolver Instance;
+
+    // ... (기존 public string TestCardID 등 변수) ...
+
+    // 🚨 2. Awake 함수 추가 (또는 수정) 🚨
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this; // 이 컴포넌트 자신을 Instance에 할당
+        }
+        else
+        {
+            // 중복 생성 방지
+            Destroy(gameObject);
+        }
+    }
     // 🚨 1. Inspector에 테스트 ID를 입력할 수 있는 필드 추가 🚨
     public string TestCardID = "N002"; // 트랩 설치 카드 ID로 초기 설정
 
@@ -42,8 +60,15 @@ public class CardEffectResolver : MonoBehaviour
             return;
         }
 
-        // 🚨 코스트 체크 (GameManager에 TryUseCost 로직이 있다고 가정하고 추가) 🚨
-        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(cardData.cost))
+        // 🚨 1. 코스트 값을 문자열에서 정수로 안전하게 변환 🚨
+        if (!int.TryParse(cardData.cost, out int requiredCost))
+        {
+            Debug.LogError($"[Resolver] 카드 '{cardData.name}'의 코스트 '{cardData.cost}' 파싱 오류.");
+            return; // 파싱 실패 시 카드 사용 중단
+        }
+
+        // 🚨 2. 정수 타입의 requiredCost를 TryUseCost에 전달 🚨
+        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(requiredCost))
         {
             Debug.LogWarning($"카드 사용 실패: 코스트 부족 ({cardData.name})");
             return;

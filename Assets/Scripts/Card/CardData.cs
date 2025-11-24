@@ -1,20 +1,20 @@
 // CardData.cs
 using System;
-using UnityEngine; // Unityì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ í¬í•¨
+using UnityEngine; // Unity¿¡¼­ »ç¿ëÇÏ±â À§ÇØ Æ÷ÇÔ
 
 [Serializable]
-public class CardData // íŒŒì¼ëª…: CardData.cs
+public class CardData // ÆÄÀÏ¸í: CardData.cs
 {
-    // CSV í—¤ë”ì™€ ì¼ì¹˜í•˜ëŠ” í•„ë“œ (ëª¨ë“  ìŠ¤íƒ¯ í•„ë“œ í¬í•¨)
+    // CSV Çì´õ¿Í ÀÏÄ¡ÇÏ´Â ÇÊµå (¸ğµç ½ºÅÈ ÇÊµå Æ÷ÇÔ)
     public string card_ID;
     public string type;
     public string @class;
     public string name;
     public string Description;
-    public int cost;
+    public string cost;
     public string EffectGroup_ID;
 
-    // ìŠ¤íƒ¯ í•„ë“œ (CSVì—ì„œ Intë¡œ ë³€í™˜ë  ì˜ˆì •)
+    // ½ºÅÈ ÇÊµå (CSV¿¡¼­ Int·Î º¯È¯µÉ ¿¹Á¤)
     public int Range;
     public int Damage;
     public int Slow;
@@ -23,10 +23,4 @@ public class CardData // íŒŒì¼ëª…: CardData.cs
     public int Wall_DUR;
     public int Wall_AMT;
     public int Heal;
-    public string Special_Flag;
-    public int Special_AMT;
-    public int Special_DUR;
-    public string CONDITION;
-    public string IH_CARD_ID;
-    public string STATUS;
 }
