@@ -8,6 +8,7 @@ public class Deck : MonoBehaviour   //in game deck data
 {   
     public static Action LastCardCancel;
     public static Deck instance;
+    public Action LastActive;
     public PlayerDeck playerdeck;
     public AssetReferenceGameObject handprefab;
     GameObject parentcanvas;

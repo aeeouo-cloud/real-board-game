@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -38,17 +39,23 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out pos);
         hoverimage.transform.localPosition = pos;
     }
-    void ActiveThis()
-    {
+    void ActionAdd()
+    {   
+        Deck.LastCardCancel -= Deck.instance.LastActive;
+        Action ActiveThis = () =>
+        {
+        Debug.Log("LastcardActived");
         this.gameObject.SetActive(true);
+        };
+        Deck.instance.LastActive = ActiveThis;
+        Deck.LastCardCancel += Deck.instance.LastActive;
     }
     public void OnEndDrag(PointerEventData eventData)
     {
         if (ishovering && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
         {
             this.gameObject.SetActive(false);
-            Deck.LastCardCancel -= ActiveThis;
-            Deck.LastCardCancel += ActiveThis;
+            ActionAdd();
             CardEffectResolver.Instance.ExecuteCardEffect(cardid);
         }
         hoverimage.transform.position = transform.position;

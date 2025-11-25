@@ -38,14 +38,12 @@ public class Move : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        Debug.Log("mouse in");
         onmouse = true;
     }
     public void OnMouseExit()
     {
         onmouse = false;
     }
-
     void Start()
     {
         rend = this.GetComponent<Renderer>();

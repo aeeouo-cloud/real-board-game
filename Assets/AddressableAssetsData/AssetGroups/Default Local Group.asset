@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
   m_GUID: 712befa08f768ef498e43fd901e3c778
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 9f035b5465e448a418fb41e2de974184
+    m_Address: Assets/Prefab/Gadget/Trap.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: c4e3d7f3e29141f43b6b02a8a6b52366, type: 2}
   m_SchemaSet:

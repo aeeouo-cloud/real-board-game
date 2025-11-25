@@ -42,13 +42,13 @@ public class CardDisplay : MonoBehaviour
     }
 
     // (TODO) 카드를 사용하려는 입력을 감지하는 로직이 여기에 들어갑니다.
-    private void OnMouseDown()
-    {
-        // 🚨 입력 감지 시 HandManager에게 사용을 요청합니다. 🚨
-        if (HandManager.Instance != null)
-        {
-            HandManager.Instance.TryUseCard(CardID);
-            Debug.Log($"[Input] {CardID} 카드 사용 요청.");
-        }
-    }
+    // private void OnMouseDown()
+    // {
+    //     // 🚨 입력 감지 시 HandManager에게 사용을 요청합니다. 🚨
+    //     if (HandManager.Instance != null)
+    //     {
+    //         HandManager.Instance.TryUseCard(CardID);
+    //         Debug.Log($"[Input] {CardID} 카드 사용 요청.");
+    //     }
+    // }
 }
