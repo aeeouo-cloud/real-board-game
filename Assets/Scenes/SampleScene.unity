@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e73c6a329e55471459ad130c1237a15b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerUnit: {fileID: 1988752796}
+  PlayerUnit: {fileID: 1846907216}
   TrapPrefab: {fileID: 0}
   InitialDrawAmount: 5
   TurnDrawAmount: 1
@@ -830,9 +830,9 @@ GameObject:
   m_Component:
   - component: {fileID: 771720984}
   - component: {fileID: 771720983}
-  - component: {fileID: 771720985}
   - component: {fileID: 771720981}
   - component: {fileID: 771720982}
+  - component: {fileID: 771720985}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged

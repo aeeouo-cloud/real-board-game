@@ -5,13 +5,13 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 
 public class Deck : MonoBehaviour   //in game deck data
-{
+{   
+    public static Action LastCardCancel;
     public static Deck instance;
     public PlayerDeck playerdeck;
     public AssetReferenceGameObject handprefab;
     GameObject parentcanvas;
     GameObject newhand;
-    public static Action LastCardCancel;
     int handlimit = 10;
     int cardindex;
     public List<string> idlist = new List<string>();
@@ -20,6 +20,7 @@ public class Deck : MonoBehaviour   //in game deck data
     {
         if(instance == null) instance = this;
         Loadasset();
+        LastCardCancel += () => {Debug.Log("lastcardcancel called");};
         //playerdeck.Load();
     }
     async void Loadasset()

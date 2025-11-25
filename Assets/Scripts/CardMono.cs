@@ -16,7 +16,6 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
     public bool ishovering = false;
     RectTransform rt;
     public string cardid;
-    public int lastindex;
     void Awake()
     {
         dropbound.LoadAssetAsync<GameObject>().Completed += handle =>
@@ -39,24 +38,26 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out pos);
         hoverimage.transform.localPosition = pos;
     }
+    void ActiveThis()
+    {
+        this.gameObject.SetActive(true);
+    }
     public void OnEndDrag(PointerEventData eventData)
     {
         if (ishovering && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
         {
-            CardEffectResolver.Instance.ExecuteCardEffect(cardid);
-            Debug.Log("card activated");
             this.gameObject.SetActive(false);
-            lastindex = this.transform.GetSiblingIndex();
+            Deck.LastCardCancel -= ActiveThis;
+            Deck.LastCardCancel += ActiveThis;
+            CardEffectResolver.Instance.ExecuteCardEffect(cardid);
         }
         hoverimage.transform.position = transform.position;
     }
-
     void Start()
     {
         rt = hoverui.GetComponent<RectTransform>();
         StartCoroutine(InstantiateBound());
     }
-
     private IEnumerator InstantiateBound() //wait for load
     {
         while (bound == null)

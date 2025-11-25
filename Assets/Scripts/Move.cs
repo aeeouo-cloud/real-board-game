@@ -5,7 +5,7 @@ using UnityEngine;
 public class Move : MonoBehaviour
 {
     public enum MoveMode {CardMove, CostMove, Inactive}
-    private MoveMode mod;
+    public MoveMode mod = MoveMode.Inactive;
     public int carddist;
     public MoveMode currentmode //if current mode set select and unselect hex (except card move)
     {
@@ -94,16 +94,13 @@ public class Move : MonoBehaviour
                     }
                 }
             }
+            currentmode = MoveMode.Inactive;
         }
         if (Input.GetMouseButtonUp(0))
         {
             if (click && onmouse && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode == MoveMode.Inactive)
             {
                 currentmode = MoveMode.CostMove;
-            }
-            else
-            {
-                currentmode = MoveMode.Inactive;
             }
             click = false;
         }

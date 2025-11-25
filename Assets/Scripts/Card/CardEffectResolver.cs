@@ -43,7 +43,7 @@ public class CardEffectResolver : MonoBehaviour
             Debug.LogError("테스트 카드 ID를 입력해 주세요.");
         }
     }
-
+    Action CancelCostAction;
     // 카드 사용 시 호출되는 주 진입점 함수
     public void ExecuteCardEffect(string cardID)
     {
@@ -75,13 +75,26 @@ public class CardEffectResolver : MonoBehaviour
             return;
         }
 
-        string effectGroupID = cardData.EffectGroup_ID;
-        void CancelCost()
+        string effectGroupID = cardData.EffectGroup_ID; 
+
+        void CancelCost()// I ADDED IT!
         {
-            GameManager.Instance.AddCost(requiredCost);
+            if(CancelCostAction ==null)
+            {
+                CancelCostAction = () => 
+                {
+                    GameManager.Instance.AddCost(requiredCost);
+                    Debug.Log($"Cost recovered - added {requiredCost}, currentcost {GameManager.Instance.CurrentCost}");
+                };
+            }
         }
-        Deck.LastCardCancel -= CancelCost;
-        Deck.LastCardCancel += CancelCost;
+        void Actionadd()
+        {
+            CancelCost();
+            Deck.LastCardCancel -= CancelCostAction;
+            Deck.LastCardCancel += CancelCostAction;
+        }
+        Actionadd();
 
         // CardEffectSequenceData 클래스 참조
         if (!DataManager.Instance.EffectSequenceTable.TryGetValue(effectGroupID, out List<CardEffectSequenceData> sequenceList))

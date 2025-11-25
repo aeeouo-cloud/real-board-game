@@ -6,7 +6,7 @@ public class Hex : MonoBehaviour
     public Vector3 position;
     public int cost;
     public bool iswall;
-    public bool isselectable = false;
+    public bool isselectable = false; 
     Renderer rend;
     public void SetPosition(int q, int r)
     {
