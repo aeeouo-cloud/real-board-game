@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     private const int MAX_COST_CAP = 10; // 코스트의 최대 상한선
 
     // 코스트 관리 변수
-    public int CurrentCost { get; private set; }
+    public int CurrentCost { get; set; }
     // private int BaseCostPerTurn = 10; // 이 변수는 이제 사용하지 않음
     public int InitialDrawAmount = 5;
     public int TurnDrawAmount = 1;
@@ -34,24 +34,6 @@ public class GameManager : MonoBehaviour
     public List<string> PlayerHand = new List<string>();
 
     // 🚨 [새로 추가된 부분] 이동 테스트 변수 및 함수 🚨
-    public int TestMoveDistance = 2;
-
-    [ContextMenu("Test_TryMovePlayer")]
-    public void TestTryMovePlayerExecution()
-    {
-        // 액션 페이즈 체크 (코스트 사용 조건)
-        if (CurrentState != GameState.PlayerTurn_ActionPhase)
-        {
-            Debug.LogWarning("[Move Test] 코스트 소모 이동 실패: 액션 페이즈가 아닙니다. 주사위 결과를 먼저 적용해 주세요.");
-            return;
-        }
-
-        // 코스트 소모 이동 함수 호출
-        Debug.Log($"[Move Test] {TestMoveDistance}칸 이동 시도. (필요 코스트: {TestMoveDistance})");
-        TryMovePlayer(TestMoveDistance);
-    }
-    // 🚨 [새로 추가된 부분 끝] 🚨
-
     void Awake()
     {
         if (Instance == null)
@@ -77,19 +59,9 @@ public class GameManager : MonoBehaviour
         foreach (var pair in DataManager.Instance.CardTable)
         {
             PlayerDeck.Add(pair.Key);
+          
         }
-        ShuffleDeck(PlayerDeck);
-    }
-
-    private void ShuffleDeck(List<string> list)
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            string temp = list[i];
-            int randomIndex = Random.Range(i, list.Count);
-            list[i] = list[randomIndex];
-            list[randomIndex] = temp;
-        }
+        Deck.instance.idlist = PlayerDeck;
     }
 
     // ---------------------- 턴 관리 로직 ----------------------
@@ -200,34 +172,9 @@ public class GameManager : MonoBehaviour
         Debug.LogWarning($"코스트 부족! 필요 코스트: {cost}, 현재 코스트: {CurrentCost}");
         return false;
     }
-
-    public bool TryMovePlayer(int distance)
+    public void AddCost(int cost)
     {
-        if (CurrentState != GameState.PlayerTurn_ActionPhase)
-        {
-            Debug.LogWarning("이동 실패: 현재는 액션 페이즈가 아닙니다.");
-            return false;
-        }
-
-        int requiredCost = distance * MoveCostPerTile;
-
-        if (TryUseCost(requiredCost))
-        {
-            if (PlayerUnit != null)
-            {
-                // TryUseCost에서 이미 코스트를 소모했으므로, 여기서 이동 실행
-                PlayerUnit.Move(distance); // 🚨 PlayerUnit의 Move 함수를 호출하여 위치를 변경합니다. 🚨
-                Debug.Log($"[Action] {distance}칸 이동 성공. 코스트 {requiredCost} 소모.");
-                return true;
-            }
-            else
-            {
-                Debug.LogError("PlayerUnit이 연결되지 않아 이동할 수 없습니다.");
-                CurrentCost += requiredCost; // 코스트 되돌리기
-                return false;
-            }
-        }
-        return false;
+        CurrentCost += cost;
     }
 
     // ---------------------- 기존 카드 효과 로직 (변경 없음) ----------------------
@@ -244,19 +191,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < amount; i++)
         {
-            if (PlayerDeck.Count > 0)
-            {
-                string cardID = PlayerDeck[0];
-                PlayerDeck.RemoveAt(0);
-                PlayerHand.Add(cardID);
-
-                Debug.Log($"[Draw System] {cardID} 카드 드로우. 남은 덱: {PlayerDeck.Count}, 현재 손패: {PlayerHand.Count}");
-            }
-            else
-            {
-                Debug.LogWarning("[Draw System] 덱이 비어 카드를 더 드로우할 수 없습니다. (피로도 로직 구현 필요)");
-                break;
-            }
+            Deck.instance.DrawCard();
         }
     }
 

@@ -15,9 +15,7 @@ public class TurnManager : MonoBehaviour
 
     void Awake()
     {
-
         diceprefab.LoadAssetAsync<GameObject>().Completed += handle =>
-
         {
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {

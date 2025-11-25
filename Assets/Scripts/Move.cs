@@ -4,13 +4,32 @@ using UnityEngine;
 
 public class Move : MonoBehaviour
 {
-    public bool active = false;
+    public enum MoveMode {CardMove, CostMove, Inactive}
+    private MoveMode mod;
+    public int carddist;
+    public MoveMode currentmode //if current mode set select and unselect hex (except card move)
+    {
+        get => mod;
+        set
+        {
+            if (mod == value)
+            return;
+            mod = value;
+            switch(mod)
+            {
+                case MoveMode.CardMove : Map.instance.SelectReachable(unit.CurrentPosition, carddist); break;
+
+                case MoveMode.CostMove : Map.instance.SelectReachable(unit.CurrentPosition, GameManager.Instance.CurrentCost); break;
+
+                case MoveMode.Inactive : Map.instance.UnSelectHex(); break;
+            }
+        }
+    }
     public bool click = false;
     public bool onmouse = false;
-
     Renderer rend;
-
-    GameObject beforelocation;
+    Hex hexComponent;
+    Unit unit;
 
     public void OnMouseDown()
     {
@@ -30,54 +49,63 @@ public class Move : MonoBehaviour
     void Start()
     {
         rend = this.GetComponent<Renderer>();
+        unit = this.GetComponent<Unit>();
     }
 
-    void Update()
+     void Update()
     {
-        rend.material.color = active ? Color.red : Color.green; //for debug
-
+        rend.material.color = currentmode == MoveMode.CostMove ? Color.red : Color.green; //for debug
         if (Input.GetMouseButtonDown(0))
         {
-            if (active && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
+            if (GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode != MoveMode.Inactive )
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 30);
                 if (Physics.Raycast(ray, out hit))
-                {
-                    Debug.Log(hit.transform.name);
-                }
-
-                if (Physics.Raycast(ray, out hit))
-                {
-                    if (beforelocation == hit.collider.gameObject)
+                {  
+                    if (hit.collider.TryGetComponent<Hex>(out hexComponent))
                     {
-                        Debug.Log("same location!");
-                    }
+                        if (hexComponent.isselectable)
+                        {                                
+                            this.transform.position = hit.transform.position;
+                            unit.CurrentPosition = hexComponent.qr;
 
-                    if (hit.collider.gameObject == this.gameObject)
-                    {
-                        Debug.Log("selfhit");
+                            if(currentmode == MoveMode.CostMove)
+                            {
+                                GameManager.Instance.TryUseCost(hexComponent.cost);
+                            }
+                            Debug.Log(hexComponent.qr);
+
+                            currentmode = MoveMode.Inactive;
+                        }
+                        else
+                        {
+                            Debug.Log("unselectable");
+                        }
                     }
-                    this.transform.position = hit.transform.position;
-                    beforelocation = hit.collider.gameObject;
+                    else
+                    {
+                        Debug.Log("Not Map object");
+                    }
+                    if(currentmode == MoveMode.CardMove)
+                    {
+                        Deck.LastCardCancel.Invoke();
+                    }
                 }
             }
         }
-
         if (Input.GetMouseButtonUp(0))
         {
-            if (active && true && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
+            if (click && onmouse && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode == MoveMode.Inactive)
             {
-                active = false;
-                return;
+                currentmode = MoveMode.CostMove;
             }
-            if (click && onmouse && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
+            else
             {
-                active = true;
+                currentmode = MoveMode.Inactive;
             }
             click = false;
         }
-
     }
 }

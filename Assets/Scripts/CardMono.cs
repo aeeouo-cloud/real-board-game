@@ -13,10 +13,10 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
     public GameObject hoverimage;
     Vector3 originalscale;
     public float sacleamount = 3f;
-    bool ishovering = false;
+    public bool ishovering = false;
     RectTransform rt;
-    public Card carddata = new Card();
-
+    public string cardid;
+    public int lastindex;
     void Awake()
     {
         dropbound.LoadAssetAsync<GameObject>().Completed += handle =>
@@ -34,22 +34,21 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(bound != null)ishovering = RectTransformUtility.RectangleContainsScreenPoint(boundinstance.GetComponent<RectTransform>(), Input.mousePosition);
+        if(boundinstance != null) ishovering = RectTransformUtility.RectangleContainsScreenPoint(boundinstance.GetComponent<RectTransform>(), Input.mousePosition);
         Vector2 pos;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out pos);
         hoverimage.transform.localPosition = pos;
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (ishovering) // card activate
+        if (ishovering && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
         {
+            CardEffectResolver.Instance.ExecuteCardEffect(cardid);
             Debug.Log("card activated");
-            Destroy(gameObject);
+            this.gameObject.SetActive(false);
+            lastindex = this.transform.GetSiblingIndex();
         }
-        else
-        {
-            hoverimage.transform.position = transform.position;
-        }
+        hoverimage.transform.position = transform.position;
     }
 
     void Start()
@@ -66,8 +65,7 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         }
         if (boundinstance == null)
         {
-            boundinstance = Instantiate(bound);
-            boundinstance.transform.SetParent(this.transform.parent?.parent, false);
+            boundinstance = Instantiate(bound,CanvasManager.canvas.GetComponent<RectTransform>(),false);
         }
     }
     // Update is called once per frame

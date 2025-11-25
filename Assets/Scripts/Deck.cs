@@ -1,30 +1,77 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 public class Deck : MonoBehaviour   //in game deck data
 {
+    public static Deck instance;
     public PlayerDeck playerdeck;
-    public GameObject parentcanvas;
-    public GameObject cardprefab;
-    List<string> idlist = new List<string>();
+    public AssetReferenceGameObject handprefab;
+    GameObject parentcanvas;
+    GameObject newhand;
+    public static Action LastCardCancel;
+    int handlimit = 10;
+    int cardindex;
+    public List<string> idlist = new List<string>();
 
     void Awake()
     {
-        playerdeck.Load();
-        idlist = playerdeck.playerdecklist;
+        if(instance == null) instance = this;
+        Loadasset();
+        //playerdeck.Load();
+    }
+    async void Loadasset()
+    {
+        var task = Addressables.LoadAssetAsync<GameObject>(handprefab);
+        await task.Task;
+        parentcanvas = task.Result;
     }
 
-    public void DrawCard()  // need card empty logic
-    {
+    async public void DrawCard()  // need card empty logic
+    {   
+        float timeout =  0;
+        while(timeout < 3f && parentcanvas == null)
+        {
+            await Task.Yield();
+            timeout += Time.deltaTime;
+        }
+        if(newhand == null)
+        {
+            newhand = Instantiate(parentcanvas);
+        }
         if (idlist == null || idlist.Count == 0)
         {
             Debug.Log("playerdeck empty");
             return;
         }
-            int rand = Random.Range(0, idlist.Count);
-            GameObject newcard = Instantiate(cardprefab, new Vector3(0, 0, 0), Quaternion.identity);
-            newcard.GetComponent<CardMono>().carddata.id = idlist[rand];
-            newcard.transform.SetParent(parentcanvas.transform, false);
+        ReoderActive();
+        if(cardindex < handlimit)
+        {
+            int rand = UnityEngine.Random.Range(0, idlist.Count);
+            GameObject nextcard = newhand.transform.GetChild(cardindex).gameObject;
+            nextcard.SetActive(true);
+            nextcard.GetComponent<CardMono>().cardid = idlist[rand];
             idlist.RemoveAt(rand);
+        }
+        else
+        {
+            Debug.Log($"hand count overs {handlimit}");
+        }
+    }
+    void ReoderActive()
+    {
+        int activeindex = 0;
+        for (int i = 0; i < newhand.transform.childCount; i++)
+        {
+            Transform child = newhand.transform.GetChild(i);
+            if (child.gameObject.activeSelf)
+            {
+                child.SetSiblingIndex(activeindex);
+                activeindex++;
+            }
+        }
+        cardindex = activeindex;
     }
 }

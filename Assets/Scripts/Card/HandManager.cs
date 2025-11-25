@@ -169,7 +169,7 @@ public class HandManager : MonoBehaviour
         int actualCost = display.CardCost; // 🚨 CardDisplay.cs에서 public int CardCost 필드를 참조합니다. 🚨
 
         // 3. 턴 상태 및 코스트 체크
-        if (GameManager.Instance.CurrentState != GameManager.GameState.PlayerTurn_ActionPhase)
+        if (GameManager.CurrentState != GameManager.GameState.PlayerTurn_ActionPhase)
         {
             Debug.LogWarning("[Use] 카드 사용 실패: 액션 페이즈가 아닙니다.");
             return;

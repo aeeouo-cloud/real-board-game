@@ -71,10 +71,17 @@ public class CardEffectResolver : MonoBehaviour
         if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(requiredCost))
         {
             Debug.LogWarning($"카드 사용 실패: 코스트 부족 ({cardData.name})");
+            Deck.LastCardCancel.Invoke();
             return;
         }
 
         string effectGroupID = cardData.EffectGroup_ID;
+        void CancelCost()
+        {
+            GameManager.Instance.AddCost(requiredCost);
+        }
+        Deck.LastCardCancel -= CancelCost;
+        Deck.LastCardCancel += CancelCost;
 
         // CardEffectSequenceData 클래스 참조
         if (!DataManager.Instance.EffectSequenceTable.TryGetValue(effectGroupID, out List<CardEffectSequenceData> sequenceList))

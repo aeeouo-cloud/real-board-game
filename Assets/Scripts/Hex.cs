@@ -4,7 +4,10 @@ public class Hex : MonoBehaviour
 {
     public Vector2Int qr;
     public Vector3 position;
-
+    public int cost;
+    public bool iswall;
+    public bool isselectable = false;
+    Renderer rend;
     public void SetPosition(int q, int r)
     {
         qr = new Vector2Int(q, r);
@@ -14,11 +17,11 @@ public class Hex : MonoBehaviour
     }
     void Start()
     {
-        
+        rend = this.GetComponent<Renderer>();
     }
 
     void Update()
     {
-        
+        rend.material.color = isselectable ? Color.red : Color.green;
     }
 }
