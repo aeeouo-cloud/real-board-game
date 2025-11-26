@@ -22,7 +22,8 @@ public class Deck : MonoBehaviour   //in game deck data
         if(instance == null) instance = this;
         Loadasset();
         LastCardCancel += () => {Debug.Log("lastcardcancel called");};
-        //playerdeck.Load();
+        //playerdeck.Load();    //이거 인스턴스화 해서 로드해야함. 프리펩 그대로 쓰면 프리펩 바뀜
+        //idlist = playerdeck.playerdecklist;
     }
     async void Loadasset()
     {
@@ -55,6 +56,7 @@ public class Deck : MonoBehaviour   //in game deck data
             GameObject nextcard = newhand.transform.GetChild(cardindex).gameObject;
             nextcard.SetActive(true);
             nextcard.GetComponent<CardMono>().cardid = idlist[rand];
+            GameManager.Instance.PlayerHand.Add(idlist[rand]);
             idlist.RemoveAt(rand);
         }
         else

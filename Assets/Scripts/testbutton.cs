@@ -35,7 +35,6 @@ public class testbutton : MonoBehaviour
 
     void onbuttonclick()    //for test
     {
-        playerdeck.AddList("12");
         deck.DrawCard();
     }
 

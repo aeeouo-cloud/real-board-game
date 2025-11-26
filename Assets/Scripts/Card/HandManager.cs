@@ -173,10 +173,7 @@ public class HandManager : MonoBehaviour
         {
             Debug.LogWarning("[Use] 카드 사용 실패: 액션 페이즈가 아닙니다.");
             return;
-        }
-
-        if (GameManager.Instance.TryUseCost(actualCost))
-        {
+        } 
             // 4. 코스트 소모 성공 -> 효과 실행
             CardEffectResolver.Instance.ExecuteCardEffect(cardID);
 
@@ -184,6 +181,6 @@ public class HandManager : MonoBehaviour
             GameManager.Instance.PlayerHand.Remove(cardID);
 
             Debug.Log($"[Use] 카드 사용 성공: {cardID}");
-        }
+        
     }
 }
