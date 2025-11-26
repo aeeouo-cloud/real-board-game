@@ -1,4 +1,4 @@
-﻿EffectGroup_ID,sequence,EffectStep_PK,EffectCode
+EffectGroup_ID,sequence,EffectStep_PK,EffectCode
 N001_FX,1,ES_N001_1,ATTACK_SINGLE
 N002_FX,1,ES_N002_1,PLACE_TRAP
 N003_FX,1,ES_N003_1,MOVE_SELF

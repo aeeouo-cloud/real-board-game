@@ -67,16 +67,6 @@ public class CardEffectResolver : MonoBehaviour
             return; // 파싱 실패 시 카드 사용 중단
         }
 
-        // 🚨 2. 정수 타입의 requiredCost를 TryUseCost에 전달 🚨
-        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(requiredCost))
-        {
-            Debug.LogWarning($"카드 사용 실패: 코스트 부족 ({cardData.name})");
-            Deck.LastCardCancel.Invoke();
-            return;
-        }
-
-        string effectGroupID = cardData.EffectGroup_ID; 
-
         void CancelCost()// I ADDED IT!
         {
             if(CancelCostAction ==null)
@@ -90,11 +80,26 @@ public class CardEffectResolver : MonoBehaviour
         }
         void Actionadd()
         {
-            CancelCost();
-            Deck.LastCardCancel -= CancelCostAction;
             Deck.LastCardCancel += CancelCostAction;
         }
+        void ActionRemove()
+        {
+            Deck.LastCardCancel -= CancelCostAction;
+        }
+
+        ActionRemove();
+        // 🚨 2. 정수 타입의 requiredCost를 TryUseCost에 전달 🚨
+        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(requiredCost))
+        {
+            Debug.LogWarning($"카드 사용 실패: 코스트 부족 ({cardData.name})");
+            Deck.LastCardCancel.Invoke();
+            return;
+        }
+        CancelCost();
         Actionadd();
+
+        string effectGroupID = cardData.EffectGroup_ID; 
+
 
         // CardEffectSequenceData 클래스 참조
         if (!DataManager.Instance.EffectSequenceTable.TryGetValue(effectGroupID, out List<CardEffectSequenceData> sequenceList))

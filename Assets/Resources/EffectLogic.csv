@@ -1,4 +1,4 @@
-﻿EffectCode,TargetType,ParameterKey,CodeDescription
+EffectCode,TargetType,ParameterKey,CodeDescription
 ATTACK_SINGLE,ENEMY_TARGET,"DAMAGE_AMOUNT, MAX_RANGE",단일 대상에게 피해를 줌(참고:DYNAMIC_STAT_SRC 인자 존재 시 해당 출처의 값으로 사용함)
 ATTACK_CONDITIONAL,ENEMY_TARGET,"DAMAGE_AMOUNT, CONDITION, TARGET_TYPE",특정 조건에 따라 대상에게 피해를 줌
 MOVE_SELF,TILE,DISTANCE,자신을 이동시킴

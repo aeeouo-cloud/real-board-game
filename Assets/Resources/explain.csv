@@ -1,4 +1,4 @@
-﻿필드명,DataType,길이 / 속성,Description,예시
+필드명,DataType,길이 / 속성,Description,예시
 CARD_ID,VARCHAR,Primary Key,카드를 구분하는 고유한 식별자,"N001,S001"
 type,VARCHAR,ENUM,"카드의 종류(공격, 행동, 함정 등)","attack, action"
 class,VARCHAR,ENUM,카드의 소속 클래스,"swordman,rogue"

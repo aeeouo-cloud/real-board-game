@@ -36,6 +36,7 @@ public class Dice : MonoBehaviour   //dice throw, calculate logic
         {
             rb.AddForce(randomDir * force, ForceMode.Impulse);
             rb.AddTorque(randomTorque, ForceMode.Impulse);
+            canclick = false;
             threw = true;
         }
     }
@@ -53,7 +54,6 @@ public class Dice : MonoBehaviour   //dice throw, calculate logic
 
     if (dotUp >= dotForward && dotUp >= dotRight) return 1;
     if (dotRight >= dotUp && dotRight >= dotForward) return 2;
-    
     return 3;
     
     }

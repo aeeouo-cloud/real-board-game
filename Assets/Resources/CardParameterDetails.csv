@@ -1,4 +1,4 @@
-﻿EffectStep_PK ,ParameterKey,ParameterValue,,
+EffectStep_PK ,ParameterKey,ParameterValue,,
 ES_N001_1,MAX_RANGE,2,,
 ES_N001_1,DAMAGE_AMOUNT,1,,
 ES_N002_1,MAX_RANGE,3,,
