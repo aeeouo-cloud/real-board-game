@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 4052b7da3ee0f3d4c9b96aa6c894b68a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - diceprefab: {fileID: 5107275799464537798, guid: 0ef924597bb5b2f45a9a39223331f769, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

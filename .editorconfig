@@ -1,0 +1,35 @@
+# EditorConfig 샘플 - Unity 협업용
+# https://editorconfig.org
+
+# 최상위 파일임을 명시
+root = true
+
+########################################################
+# C# 코드 파일 설정
+########################################################
+[*.cs]
+charset = utf-8            # UTF-8 without BOM
+end_of_line = crlf         # Windows CRLF 줄바꿈
+indent_style = space       # 공백 들여쓰기
+indent_size = 4            # 4칸 들여쓰기
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+########################################################
+# CSV / JSON / TXT 데이터 파일 설정
+########################################################
+[*.{csv,json,txt}]
+charset = utf-8            # UTF-8 without BOM
+end_of_line = crlf         # CRLF 줄바꿈
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+########################################################
+# 기타 텍스트 파일 기본 설정
+########################################################
+[*]
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
