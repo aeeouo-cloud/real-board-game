@@ -6,31 +6,27 @@ using System;
 
 public class CardEffectResolver : MonoBehaviour
 {
-    // 🚨 1. 정적(static) Instance 변수 추가 🚨
     public static CardEffectResolver Instance;
 
-    // ... (기존 public string TestCardID 등 변수) ...
-
-    // 🚨 2. Awake 함수 추가 (또는 수정) 🚨
     void Awake()
     {
         if (Instance == null)
         {
-            Instance = this; // 이 컴포넌트 자신을 Instance에 할당
+            Instance = this;
         }
         else
         {
-            // 중복 생성 방지
             Destroy(gameObject);
         }
     }
-    // 🚨 1. Inspector에 테스트 ID를 입력할 수 있는 필드 추가 🚨
-    public string TestCardID = "N002"; // 트랩 설치 카드 ID로 초기 설정
 
-    // 🚨 공격 테스트를 위한 임시 적 유닛 변수 추가 🚨
-    public Unit EnemyTarget; // Inspector에서 EnemyUnit 오브젝트를 여기에 연결합니다. 
+    // Inspector 필드
+    public Unit EnemyTarget;
+    public string TestCardID = "N002";
 
-    // 🚨 2. Inspector에 버튼을 생성하는 속성 추가 🚨
+    // 효과의 주 대상 (현재 턴 플레이어)
+    private Unit PlayerSource => GameManager.Instance.PlayerUnit;
+
     [ContextMenu("Execute Test Card")]
     public void TestManualExecution()
     {
@@ -44,56 +40,79 @@ public class CardEffectResolver : MonoBehaviour
         }
     }
 
-    // 카드 사용 시 호출되는 주 진입점 함수
+    // 카드 사용 시 호출되는 주 진입점 함수 (HandManager에서 호출)
     public void ExecuteCardEffect(string cardID)
     {
-        if (DataManager.Instance == null)
+        if (DataManager.Instance == null || GameManager.Instance == null)
         {
-            Debug.LogError("DataManager가 초기화되지 않았습니다.");
+            Debug.LogError("DataManager 또는 GameManager가 초기화되지 않았습니다.");
             return;
         }
 
-        // CardData 클래스 참조
         if (!DataManager.Instance.CardTable.TryGetValue(cardID, out CardData cardData))
         {
             Debug.LogError($"Card ID를 찾을 수 없음: {cardID}");
             return;
         }
 
-        // 🚨 1. 코스트 값을 문자열에서 정수로 안전하게 변환 🚨
-        if (!int.TryParse(cardData.cost, out int requiredCost))
-        {
-            Debug.LogError($"[Resolver] 카드 '{cardData.name}'의 코스트 '{cardData.cost}' 파싱 오류.");
-            return; // 파싱 실패 시 카드 사용 중단
-        }
-
-        // 🚨 2. 정수 타입의 requiredCost를 TryUseCost에 전달 🚨
-        if (GameManager.Instance != null && !GameManager.Instance.TryUseCost(requiredCost))
-        {
-            Debug.LogWarning($"카드 사용 실패: 코스트 부족 ({cardData.name})");
-            return;
-        }
-
         string effectGroupID = cardData.EffectGroup_ID;
 
-        // CardEffectSequenceData 클래스 참조
         if (!DataManager.Instance.EffectSequenceTable.TryGetValue(effectGroupID, out List<CardEffectSequenceData> sequenceList))
         {
             Debug.LogError($"EffectGroup ID를 찾을 수 없음: {effectGroupID}");
             return;
         }
 
-        Debug.Log($"--- {cardData.name} 카드의 효과 실행 시작 (ID: {cardID}) ---");
+        // 타겟팅이 필요한 카드(REDUCE_COST_SINGLE)인지 확인 
+        if (sequenceList.Count > 0 && sequenceList[0].EffectCode == "REDUCE_COST_SINGLE")
+        {
+            GameManager.Instance.EnterTargetingMode(cardID);
+            Debug.Log($"[Targeting Flow] {cardID}는 타겟팅이 필요하여 모드로 진입합니다.");
+            return; // 일반 효과 실행을 중단하고 타겟팅을 기다립니다.
+        }
+
+        Debug.Log($"--- {cardData.name} 카드의 일반 효과 실행 시작 (ID: {cardID}) ---");
 
         foreach (var step in sequenceList)
         {
-            // CardParameterDetailsData 클래스 참조
             DataManager.Instance.ParameterDetailTable.TryGetValue(step.EffectStep_PK, out List<CardParameterDetailsData> parameters);
-
             ExecuteEffectLogic(step.EffectCode, parameters);
         }
 
-        Debug.Log($"--- {cardData.name} 카드의 효과 실행 완료 ---");
+        Debug.Log($"--- {cardData.name} 카드의 일반 효과 실행 완료 ---");
+    }
+
+    // 타겟팅이 완료된 후 호출되는 함수 (RCS 처리)
+    public void ExecuteTargetedEffect(string sourceCardID, string targetCardID)
+    {
+        if (DataManager.Instance == null || GameManager.Instance == null) return;
+
+        if (!DataManager.Instance.CardTable.TryGetValue(sourceCardID, out CardData cardData)) return;
+
+        DataManager.Instance.EffectSequenceTable.TryGetValue(cardData.EffectGroup_ID, out List<CardEffectSequenceData> sequenceList);
+        if (sequenceList == null || sequenceList.Count == 0) return;
+
+        Debug.Log($"--- 타겟팅 효과 실행 시작 (원천: {sourceCardID}, 대상: {targetCardID}) ---");
+
+        CardEffectSequenceData step = sequenceList[0];
+        string effectCode = step.EffectCode;
+
+        DataManager.Instance.ParameterDetailTable.TryGetValue(step.EffectStep_PK, out List<CardParameterDetailsData> parameters);
+        Dictionary<string, string> paramDict = parameters?.ToDictionary(p => p.ParameterKey, p => p.ParameterValue)
+                                                             ?? new Dictionary<string, string>();
+
+        if (effectCode == "REDUCE_COST_SINGLE")
+        {
+            int modifierAmount = GetIntParam(paramDict, "AMOUNT");
+            GameManager.Instance.ApplyHandCostModifier(targetCardID, modifierAmount);
+            Debug.Log($"[Targeted Effect] {sourceCardID}가 {targetCardID}의 코스트를 {modifierAmount}만큼 수정했습니다.");
+        }
+        else
+        {
+            Debug.LogWarning($"ExecuteTargetedEffect: 예상치 못한 EffectCode ({effectCode})가 타겟팅 효과로 실행되었습니다.");
+        }
+
+        Debug.Log($"--- 타겟팅 효과 실행 완료 ---");
     }
 
     // Helper 함수: 파라미터 딕셔너리에서 키를 찾고, 찾지 못하거나 형식이 틀리면 0을 반환
@@ -110,62 +129,122 @@ public class CardEffectResolver : MonoBehaviour
     private void ExecuteEffectLogic(string effectCode, List<CardParameterDetailsData> parameters)
     {
         Dictionary<string, string> paramDict = parameters?.ToDictionary(p => p.ParameterKey, p => p.ParameterValue)
-                                                            ?? new Dictionary<string, string>();
+                                                             ?? new Dictionary<string, string>();
 
-        if (GameManager.Instance == null)
+        if (GameManager.Instance == null || StatusEffectManager.Instance == null)
         {
-            Debug.LogError("GameManager 인스턴스가 초기화되지 않았습니다.");
+            Debug.LogError("GameManager 또는 StatusEffectManager 인스턴스가 초기화되지 않았습니다.");
             return;
         }
 
-        // 기본 대상은 PlayerUnit으로 설정 (힐/이동 등)
         Unit target = GameManager.Instance.PlayerUnit;
-        if (target == null)
+        Unit source = GameManager.Instance.PlayerUnit;
+
+        // TargetType에 따라 target을 EnemyTarget 또는 PlayerUnit으로 변경하는 로직
+        if (paramDict.TryGetValue("TARGET_TYPE", out string targetType) && targetType == "ENEMY")
         {
-            Debug.LogError("PlayerUnit이 GameManager의 Inspector 필드에 연결되지 않았습니다.");
-            // return; // 공격 시에는 EnemyTarget을 사용할 것이므로 주석 처리
+            target = EnemyTarget;
         }
+
+        // 공통 파라미터 획득
+        int amount = GetIntParam(paramDict, "AMOUNT");
+        int duration = GetIntParam(paramDict, "DURATION");
 
         // EffectCode에 따라 로직 분기 및 연결
         switch (effectCode)
         {
+            // -------------------- 기본/공격/이동 (기존) --------------------
             case "ATTACK_SINGLE":
             case "ATTACK_CONDITIONAL":
+            case "MOVE_ATTACK": // 이동 후 공격
                 int range = GetIntParam(paramDict, "MAX_RANGE");
                 int damage = GetIntParam(paramDict, "DAMAGE_AMOUNT");
 
-                // 🚨 공격 대상 지정: EnemyTarget 사용 🚨
-                Unit attackTarget = EnemyTarget;
+                Unit attackTarget = EnemyTarget; // 임시 대상 지정
 
-                if (attackTarget != null)
+                if (attackTarget != null && source != null)
                 {
-                    GameManager.Instance.ApplyAttack(attackTarget, damage, range);
+                    GameManager.Instance.ApplyAttack(source, attackTarget, damage, range);
                 }
                 else
                 {
-                    Debug.LogError("[Attack Test] EnemyTarget 변수에 공격할 유닛을 연결해 주세요.");
+                    Debug.LogError("[Attack] 공격 대상 또는 공격자 유닛이 연결되지 않았습니다.");
+                }
+                break;
+            case "HEAL_HP":
+                GameManager.Instance.ProcessHeal(target, amount);
+                break;
+            case "DRAW_CARD_SELF":
+                GameManager.Instance.ProcessDraw(amount);
+                break;
+            case "MOVE_SELF":
+                GameManager.Instance.ProcessMove(target, amount);
+                break;
+            case "PLACE_TRAP":
+                int trapRange = GetIntParam(paramDict, "MAX_RANGE");
+                GameManager.Instance.PlaceTrap(trapRange, amount); // Amount를 Slow/Damage로 사용
+                break;
+
+            // -------------------- 상태/버프/디버프 로직 (APPLY_* 구현) --------------------
+            case "APPLY_DAMAGE_RESIST":
+            case "APPLY_DAMAGE_IMMUNE":
+            case "APPLY_TARGET_IMMUNE":
+            case "APPLY_DEBUFF":
+            case "APPLY_DAMAGE_MOD_GLOBAL":
+                if (paramDict.TryGetValue("DEBUFF_ID", out string statusIdStr) && Enum.TryParse(statusIdStr, true, out StatusID statusID))
+                {
+                    StatusEffectManager.Instance.ApplyEffect(statusID, amount, duration, target);
+                }
+                else
+                {
+                    Debug.LogError($"[Status] DEBUFF_ID 파라미터가 누락되었거나 유효하지 않습니다.");
+                }
+                break;
+            case "REMOVE_STATUS":
+                if (paramDict.TryGetValue("STATUS_ID", out string statusRemoveIdStr) && Enum.TryParse(statusRemoveIdStr, true, out StatusID statusRemoveID))
+                {
+                    StatusEffectManager.Instance.RemoveStatus(target, statusRemoveID);
                 }
                 break;
 
-            case "DRAW_CARD_SELF":
-                int drawAmount = GetIntParam(paramDict, "AMOUNT");
-                GameManager.Instance.ProcessDraw(drawAmount);
+            // -------------------- 덱/패 조작 로직 (구현) --------------------
+            case "INSERT_DECK":
+            case "INSERT_HAND":
+                if (paramDict.TryGetValue("CARD_ID_TARGET", out string cardIdTarget))
+                {
+                    if (effectCode == "INSERT_DECK")
+                        GameManager.Instance.InsertCardIntoDeck(cardIdTarget, amount);
+                    else
+                        GameManager.Instance.InsertCardIntoHand(cardIdTarget, amount);
+                }
+                break;
+            case "DISCARD_HAND_ENEMY":
+                GameManager.Instance.DiscardEnemyHand(amount);
+                break;
+            case "DISCARD_DECK_ENEMY":
+                Debug.LogWarning($"[Deck] DISCARD_DECK_ENEMY 로직 구현 필요.");
                 break;
 
-            case "HEAL_HP":
-                int healAmount = GetIntParam(paramDict, "AMOUNT");
-                GameManager.Instance.ProcessHeal(target, healAmount);
+            // -------------------- 코스트/스탯 수정 로직 (구현) --------------------
+            case "REDUCE_COST_ALL":
+                GameManager.Instance.ApplyAllHandCostModifier(amount);
+                break;
+            case "REDUCE_COST_SINGLE":
+                Debug.LogError("REDUCE_COST_SINGLE: 타겟팅 로직을 통해서만 실행되어야 합니다.");
+                break;
+            case "MODIFY_HAND_STAT":
+                Debug.LogWarning($"[Modifier] MODIFY_HAND_STAT 로직 구현 필요.");
+                break;
+            case "MODIFY_ENEMY_HAND_STAT":
+                Debug.LogWarning($"[Modifier] MODIFY_ENEMY_HAND_STAT 로직 구현 필요.");
                 break;
 
-            case "MOVE_SELF":
-                int moveDistance = GetIntParam(paramDict, "DISTANCE");
-                GameManager.Instance.ProcessMove(target, moveDistance);
-                break;
-
-            case "PLACE_TRAP":
-                int trapRange = GetIntParam(paramDict, "MAX_RANGE");
-                int slowAmount = GetIntParam(paramDict, "SLOW_AMOUNT");
-                GameManager.Instance.PlaceTrap(trapRange, slowAmount);
+            // -------------------- 흐름 제어/특수 효과 (구현) --------------------
+            case "TAKE_EXTRA_TURN":
+            case "REFUND_COST_IMMEDIATE":
+            case "CHECK_BRANCHING":
+            case "MOVE_TO_OBJECT_RANGE":
+                Debug.LogWarning($"[Flow/Board] {effectCode} 로직 구현 필요.");
                 break;
 
             default:
