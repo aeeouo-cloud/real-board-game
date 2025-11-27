@@ -1,4 +1,4 @@
-﻿ParameterKey,DataType,Description
+ParameterKey,DataType,Description
 AMOUNT,INT,"회복량, 드로우 수 등 일반적인 수량"
 CARD_ID,VARCHAR,생성/삽입할 카드의 ID (참조 키)
 CARD_TYPE,VARCHAR,수정/필터링할 카드의 유형
