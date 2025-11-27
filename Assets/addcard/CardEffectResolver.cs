@@ -99,7 +99,7 @@ public class CardEffectResolver : MonoBehaviour
 
         DataManager.Instance.ParameterDetailTable.TryGetValue(step.EffectStep_PK, out List<CardParameterDetailsData> parameters);
         Dictionary<string, string> paramDict = parameters?.ToDictionary(p => p.ParameterKey, p => p.ParameterValue)
-                                                             ?? new Dictionary<string, string>();
+                                                            ?? new Dictionary<string, string>();
 
         if (effectCode == "REDUCE_COST_SINGLE")
         {
@@ -129,7 +129,7 @@ public class CardEffectResolver : MonoBehaviour
     private void ExecuteEffectLogic(string effectCode, List<CardParameterDetailsData> parameters)
     {
         Dictionary<string, string> paramDict = parameters?.ToDictionary(p => p.ParameterKey, p => p.ParameterValue)
-                                                             ?? new Dictionary<string, string>();
+                                                            ?? new Dictionary<string, string>();
 
         if (GameManager.Instance == null || StatusEffectManager.Instance == null)
         {
@@ -177,8 +177,24 @@ public class CardEffectResolver : MonoBehaviour
             case "DRAW_CARD_SELF":
                 GameManager.Instance.ProcessDraw(amount);
                 break;
-            case "MOVE_SELF":
-                GameManager.Instance.ProcessMove(target, amount);
+            case "MOVE_SELF": // <<<<<<<<<<<<<<< 여기에 로직을 적용합니다. >>>>>>>>>>>>>>>
+                // 1. Target Unit에서 Move 컴포넌트를 가져옵니다.
+                Move unitMove = target.GetComponent<Move>();
+
+                if (unitMove != null)
+                {
+                    // 2. 카드 파라미터에서 얻은 거리(amount)를 Move.cs의 carddist에 설정합니다.
+                    unitMove.carddist = amount;
+
+                    // 3. 유닛을 'CardMove' 모드로 전환합니다. (맵에 하이라이트 표시 및 유저 클릭 대기)
+                    unitMove.currentmode = Move.MoveMode.CardMove;
+
+                    Debug.Log($"[MOVE_SELF] 유닛({target.name})을 거리 {amount}로 이동 가능한 모드로 전환합니다.");
+                }
+                else
+                {
+                    Debug.LogError($"[MOVE_SELF] 대상 유닛({target.name})에 Move 컴포넌트가 없습니다.");
+                }
                 break;
             case "PLACE_TRAP":
                 int trapRange = GetIntParam(paramDict, "MAX_RANGE");
