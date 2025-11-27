@@ -1,4 +1,3 @@
-﻿// HandManager.cs
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +9,9 @@ public class HandManager : MonoBehaviour
 
     // --- 설정 필드 (Inspector에서 연결) ---
     [Header("Dependencies")]
-    public GameManager GameManager;          // GameManager 인스턴스 (데이터 접근)
-    public GameObject CardUIPrefab;         // 실제 카드 UI 프리팹 (CardDisplay 스크립트가 붙어 있어야 함)
-    public Transform HandContainer;          // 카드를 배치할 부모 트랜스폼 (손패의 중심 위치)
+    public GameManager GameManager;       // GameManager 인스턴스 (데이터 접근)
+    public GameObject CardUIPrefab;       // 실제 카드 UI 프리팹 (CardDisplay 스크립트가 붙어 있어야 함)
+    public Transform HandContainer;        // 카드를 배치할 부모 트랜스폼 (손패의 중심 위치)
 
     [Header("Layout Settings")]
     public float CardSpacing = 0.5f;        // 카드 사이의 간격
@@ -95,6 +94,7 @@ public class HandManager : MonoBehaviour
                 CardDisplay display = cardObj.GetComponent<CardDisplay>();
                 if (display != null)
                 {
+                    // PlayerHand는 CardID의 리스트이므로, 해당 ID를 사용합니다.
                     display.Initialize(id);
                 }
                 else
@@ -114,29 +114,28 @@ public class HandManager : MonoBehaviour
         int cardCount = activeCardObjects.Count;
         if (cardCount == 0) return;
 
-        // 전체 손패가 차지할 너비 계산
         float totalWidth = Mathf.Min(MaxWidth, cardCount * CardSpacing);
-
-        // 첫 번째 카드의 시작 위치
         float startX = -totalWidth / 2f + CardSpacing / 2f;
 
-        // 현재 손패에 있는 카드 ID 리스트 (순서 보장)
         List<string> currentHandIDs = GameManager.PlayerHand;
 
         for (int i = 0; i < cardCount; i++)
         {
             string cardID = currentHandIDs[i];
-            GameObject cardObj = activeCardObjects[cardID]; // Dictionary에서 오브젝트를 가져옴
 
-            // X 위치 계산 (직선 배치 기본)
+            // 🚨 [핵심 수정] Dictionary에서 TryGetValue로 안전하게 오브젝트를 가져와 키 오류 방지 🚨
+            if (!activeCardObjects.TryGetValue(cardID, out GameObject cardObj))
+            {
+                // 이 카드는 아직 SynchronizeHandVisuals()에 의해 생성 중이므로, 이 프레임은 건너뜁니다.
+                continue;
+            }
+
             float xPos = startX + i * CardSpacing;
 
-            // Y 위치 및 Z 회전 계산 (부채꼴 효과)
-            float t = (cardCount > 1) ? (float)i / (cardCount - 1) : 0.5f; // 0과 1 사이의 비율
-            float rotation = (t - 0.5f) * FanAngle; // 중심(0.5)을 기준으로 회전
-            float yPos = -Mathf.Abs(rotation) * 0.05f; // 부채꼴을 만들 때 카드를 살짝 내림 (시각적 보정)
+            float t = (cardCount > 1) ? (float)i / (cardCount - 1) : 0.5f;
+            float rotation = (t - 0.5f) * FanAngle;
+            float yPos = -Mathf.Abs(rotation) * 0.05f;
 
-            // 목표 위치와 회전
             Vector3 targetPos = new Vector3(xPos, yPos, 0);
             Quaternion targetRot = Quaternion.Euler(0, 0, rotation);
 
@@ -149,14 +148,12 @@ public class HandManager : MonoBehaviour
     // 3. 카드 사용 요청 (CardDisplay가 클릭 시 호출할 함수)
     public void TryUseCard(string cardID)
     {
-        // 1. 카드를 사용하려면 먼저 HandManager의 오브젝트 딕셔너리에 있어야 함
         if (!activeCardObjects.ContainsKey(cardID))
         {
             Debug.LogWarning($"[Use] 손패에 없는 카드 ID 사용 요청: {cardID}");
             return;
         }
 
-        // 🚨 2. 실제 코스트 값을 CardDisplay에서 가져오기 🚨
         GameObject cardObject = activeCardObjects[cardID];
         CardDisplay display = cardObject.GetComponent<CardDisplay>();
 
@@ -166,21 +163,44 @@ public class HandManager : MonoBehaviour
             return;
         }
 
-        int actualCost = display.CardCost; // 🚨 CardDisplay.cs에서 public int CardCost 필드를 참조합니다. 🚨
+        // 1. 코스트 조회 (CardDisplay는 GameManager의 GetFinalCost를 참조하여 코스트를 가져옴)
+        int actualCost = display.CardCost;
 
-        // 3. 턴 상태 및 코스트 체크
-        if (GameManager.CurrentState != GameManager.GameState.PlayerTurn_ActionPhase)
+        // 2. 턴 상태 체크
+        if (GameManager.Instance.CurrentState != GameManager.GameState.PlayerTurn_ActionPhase)
         {
-            Debug.LogWarning("[Use] 카드 사용 실패: 액션 페이즈가 아닙니다.");
+            GameManager.Instance.ShowWarning("카드는 액션 페이즈에만 사용할 수 있습니다.");
             return;
-        } 
-            // 4. 코스트 소모 성공 -> 효과 실행
+        }
+
+        // 🚨 3. 코스트 체크 (차감하지 않고 순수하게 체크만)
+        if (GameManager.Instance.TryUseCost(actualCost))
+        {
+            // 🚨 4. 사용 전 최종 유효성 검사 (사거리 내 타겟 유무 체크) 🚨
+            if (CardEffectResolver.Instance.NeedsTargetValidation(cardID))
+            {
+                if (!CardEffectResolver.Instance.IsActionValid(cardID))
+                {
+                    GameManager.Instance.ShowWarning("사용 불가: 유효한 타겟이 사거리 내에 없습니다!");
+                    return; // 코스트 소모 및 효과 실행을 막습니다.
+                }
+            }
+
+            // 5. 코스트 체크 성공 -> 실제로 코스트 차감
+            GameManager.Instance.ConsumeCost(actualCost);
+
+            // 6. 효과 실행
             CardEffectResolver.Instance.ExecuteCardEffect(cardID);
 
-            // 5. PlayerHand 리스트에서 해당 카드 ID 제거 (SynchronizeHandVisuals가 UI 제거를 처리)
+            // 7. PlayerHand 리스트에서 해당 카드 ID 제거 (UI 제거 동기화)
             GameManager.Instance.PlayerHand.Remove(cardID);
 
-            Debug.Log($"[Use] 카드 사용 성공: {cardID}");
-        
+            Debug.Log($"[Use] 카드 사용 성공: {cardID} (Cost: {actualCost})");
+        }
+        else
+        {
+            // 8. 코스트 부족 실패 -> 경고 메시지 출력
+            GameManager.Instance.ShowWarning("코스트가 모자랍니다!");
+        }
     }
 }

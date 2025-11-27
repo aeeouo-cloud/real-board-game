@@ -34,26 +34,31 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
 
     public void OnDrag(PointerEventData eventData)
     {
-        if(boundinstance != null) ishovering = RectTransformUtility.RectangleContainsScreenPoint(boundinstance.GetComponent<RectTransform>(), Input.mousePosition);
+        if (boundinstance != null) ishovering = RectTransformUtility.RectangleContainsScreenPoint(boundinstance.GetComponent<RectTransform>(), Input.mousePosition);
         Vector2 pos;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position, eventData.pressEventCamera, out pos);
         hoverimage.transform.localPosition = pos;
     }
     void ActionAdd()
-    {   
-        Deck.LastCardCancel -= Deck.instance.LastActive;
-        Action ActiveThis = () =>
+    {
+        // Deck.instance가 null인지 확인하여 오류 방지
+        if (Deck.instance != null)
         {
-        Debug.Log("LastcardActived");
-        this.gameObject.SetActive(true);
-        };
-        Deck.instance.LastActive = ActiveThis;
-        Deck.LastCardCancel += Deck.instance.LastActive;
+            Deck.LastCardCancel -= Deck.instance.LastActive;
+            Action ActiveThis = () =>
+            {
+                Debug.Log("LastcardActived");
+                this.gameObject.SetActive(true);
+            };
+            Deck.instance.LastActive = ActiveThis;
+            Deck.LastCardCancel += Deck.instance.LastActive;
+        }
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (ishovering && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
-        {
+        // [수정된 부분] GameManager.Instance를 통해 CurrentState에 접근합니다.
+        if (ishovering && GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
+        {
             this.gameObject.SetActive(false);
             ActionAdd();
             CardEffectResolver.Instance.ExecuteCardEffect(cardid);
@@ -66,19 +71,19 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         StartCoroutine(InstantiateBound());
     }
     private IEnumerator InstantiateBound() //wait for load
-    {
+    {
         while (bound == null)
         {
             yield return null;
         }
         if (boundinstance == null)
         {
-            boundinstance = Instantiate(bound,CanvasManager.canvas.GetComponent<RectTransform>(),false);
+            boundinstance = Instantiate(bound, CanvasManager.canvas.GetComponent<RectTransform>(), false);
         }
     }
-    // Update is called once per frame
+    // Update is called once per frame
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerEnter(PointerEventData eventData)
     {
         originalscale = hoverimage.transform.localScale;
         hoverimage.transform.localScale = new Vector3(sacleamount, sacleamount, sacleamount);
@@ -87,5 +92,5 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
     public void OnPointerExit(PointerEventData eventData)
     {
         hoverimage.transform.localScale = originalscale;
-    }   
+    }
 }
