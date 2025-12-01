@@ -19,13 +19,13 @@ public class Unit : MonoBehaviour
     Move move;
     void Awake()
     {
-        multyunit = this.GetComponent<MultyUnit>();
-        multyunit.OnPosChanged += ServerPosChange;
+        // multyunit = this.GetComponent<MultyUnit>();
+        // multyunit.OnPosChanged += ServerPosChange;
     }
-    void ServerPosChange(Vector2Int prevPos, Vector2Int newPos)
-    {
-        CurrentPosition = newPos;
-    }
+    // void ServerPosChange(Vector2Int prevPos, Vector2Int newPos)
+    // {
+    //     CurrentPosition = newPos;
+    // }
     void Start()
     {
         move = this.GetComponent<Move>();

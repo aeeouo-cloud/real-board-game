@@ -29,14 +29,13 @@ public class TurnManager : MonoBehaviour
         };
     }
 
-
     void OnEnable()
     {
-        GameManager.PlayerTurnStarted += CallTurn;
+        GameManager.Instance.PlayerTurnStarted += CallTurn;
     }
     void OnDisable()
     {
-        GameManager.PlayerTurnStarted -= CallTurn;
+        GameManager.Instance.PlayerTurnStarted -= CallTurn;
     }
 
     public void CallTurn()

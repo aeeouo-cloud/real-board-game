@@ -6,7 +6,7 @@ public class TurnButton : MonoBehaviour
     public Button button;
     void onbuttonclick()
     {
-        if (GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
+        if (GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
         {
             turnmanager.GetComponent<TurnManager>().EndTurn(); 
             Debug.Log("turneded");

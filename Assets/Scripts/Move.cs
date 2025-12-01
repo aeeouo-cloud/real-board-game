@@ -52,10 +52,13 @@ public class Move : MonoBehaviour
 
      void Update()
     {
-        rend.material.color = currentmode == MoveMode.CostMove ? Color.red : Color.green; //for debug
+        if (rend != null && GameManager.Instance != null)
+        {
+            rend.material.color = currentmode == MoveMode.CostMove ? Color.red : Color.green; //for debug
+        }
         if (Input.GetMouseButtonDown(0))
         {
-            if (GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode != MoveMode.Inactive )
+            if (GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode != MoveMode.Inactive )
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -95,7 +98,7 @@ public class Move : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
-            if (click && onmouse && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode == MoveMode.Inactive)
+            if (click && onmouse && GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase && currentmode == MoveMode.Inactive)
             {
                 currentmode = MoveMode.CostMove;
             }

@@ -9,14 +9,14 @@ using System.Linq;
 public class GameManager : MonoBehaviour
 {
     GameNetworkManager gameNetworkManager; // 추가했습니다.
-    public static event Action PlayerTurnStarted;   //턴시작 알리는 이벤트 추가하였습니다
+    public  event Action PlayerTurnStarted;   //턴시작 알리는 이벤트 추가하였습니다
     public static GameManager Instance;
     public Unit PlayerUnit;
     public GameObject TrapPrefab;
 
     // 턴/상태 관리 변수
     public enum GameState { Setup, PlayerTurn_BaseActions, PlayerTurn_ActionPhase, EnemyTurn, GameEnd }
-    public static GameState CurrentState = GameState.Setup; // 다른 스크립트에서 참조하기 쉽게 static으로 변경했습니다.
+    public GameState CurrentState = GameState.Setup;
 
     // 🚨 턴 카운트 및 코스트 상한 변수 추가 🚨
     public int TurnCount { get; private set; } = 0; // 현재 턴 수 (0에서 시작)
@@ -43,8 +43,8 @@ public class GameManager : MonoBehaviour
             Instance = this;
         else Destroy(gameObject);
 
-        gameNetworkManager = this.GetComponent<GameNetworkManager>();
-        NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
+        //gameNetworkManager = this.GetComponent<GameNetworkManager>();
+        //NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
     }
     void HandleServerStarted()
     {

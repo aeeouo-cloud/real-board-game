@@ -52,7 +52,7 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (ishovering && GameManager.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
+        if (ishovering && GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase) // card activate
         {
             this.gameObject.SetActive(false);
             ActionAdd();
