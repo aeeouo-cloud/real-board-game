@@ -16,33 +16,42 @@ public class Deck : MonoBehaviour   //in game deck data
     int handlimit = 10;
     int cardindex;
     public List<string> idlist = new List<string>();
-
+    Task inittask;
     void Awake()
     {
         if(instance == null) instance = this;
-        Loadasset();
+        else {Destroy(gameObject); return;}
+
+        inittask = Loadasset().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError(task.Exception);
+            }
+        },TaskScheduler.FromCurrentSynchronizationContext()
+        );
+
         LastCardCancel += () => {Debug.Log("lastcardcancel called");};
         //playerdeck.Load();    //이거 인스턴스화 해서 로드해야함. 프리펩 그대로 쓰면 프리펩 바뀜
         //idlist = playerdeck.playerdecklist;
     }
-    async void Loadasset()
+    async Task Loadasset()
     {
         var task = Addressables.LoadAssetAsync<GameObject>(handprefab);
         await task.Task;
         parentcanvas = task.Result;
+        newhand = Instantiate(parentcanvas);
     }
-
     async public void DrawCard()  // need card empty logic
-    {   
-        float timeout =  0;
-        while(timeout < 3f && parentcanvas == null)
+    {
+        if (inittask != null)
         {
-            await Task.Yield();
-            timeout += Time.deltaTime;
+            await inittask;
         }
-        if(newhand == null)
+        if (parentcanvas == null || newhand == null)
         {
-            newhand = Instantiate(parentcanvas);
+            Debug.Log("Load hand falied");
+            return;
         }
         if (idlist == null || idlist.Count == 0)
         {
@@ -77,5 +86,9 @@ public class Deck : MonoBehaviour   //in game deck data
             }
         }
         cardindex = activeindex;
+    }
+    void OnDestroy()
+    {
+        LastCardCancel = null;
     }
 }

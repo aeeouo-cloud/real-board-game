@@ -65,8 +65,7 @@ public class Move : MonoBehaviour
                     if (hit.collider.TryGetComponent<Hex>(out hexComponent))
                     {
                         if (hexComponent.isselectable)
-                        {                                
-                            this.transform.position = hit.transform.position;
+                        {
                             unit.CurrentPosition = hexComponent.qr;
 
                             if(currentmode == MoveMode.CostMove)

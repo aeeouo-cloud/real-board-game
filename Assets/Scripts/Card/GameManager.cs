@@ -3,9 +3,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using System;
+using Unity.Netcode;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
+    GameNetworkManager gameNetworkManager; // 추가했습니다.
     public static event Action PlayerTurnStarted;   //턴시작 알리는 이벤트 추가하였습니다
     public static GameManager Instance;
     public Unit PlayerUnit;
@@ -38,8 +41,24 @@ public class GameManager : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
-    }
+        else Destroy(gameObject);
 
+        gameNetworkManager = this.GetComponent<GameNetworkManager>();
+        NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
+    }
+    void HandleServerStarted()
+    {
+        if (!NetworkManager.Singleton.IsServer) return;
+
+        NetworkObject networkturn = this.GetComponent<NetworkObject>();
+        networkturn.Spawn();
+        ulong clientid = NetworkManager.Singleton.ConnectedClientsIds.First();
+
+        if(gameNetworkManager != null)
+        {
+            
+        }
+    }
     void Start()
     {
         if (DataManager.Instance != null && DataManager.Instance.CardTable.Count > 0 && PlayerDeck.Count == 0)
@@ -59,7 +78,6 @@ public class GameManager : MonoBehaviour
         foreach (var pair in DataManager.Instance.CardTable)
         {
             PlayerDeck.Add(pair.Key);
-          
         }
         Deck.instance.idlist = PlayerDeck;
     }
