@@ -1,5 +1,5 @@
-﻿// CardDisplay.cs
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.EventSystems; // OnPointerClick을 위해 필수
 
 public class CardDisplay : MonoBehaviour
 {
@@ -40,15 +40,29 @@ public class CardDisplay : MonoBehaviour
             Debug.LogError($"[CardDisplay] {CardID} 코스트 로딩 실패. 기본값 0 할당.");
         }
     }
-
-    // (TODO) 카드를 사용하려는 입력을 감지하는 로직이 여기에 들어갑니다.
-    // private void OnMouseDown()
+    // public void OnPointerClick(PointerEventData eventData)
     // {
-    //     // 🚨 입력 감지 시 HandManager에게 사용을 요청합니다. 🚨
-    //     if (HandManager.Instance != null)
+    //     if (eventData.button != PointerEventData.InputButton.Left)
+    //         return;
+
+    //     if (HandManager.Instance == null || GameManager.Instance == null)
+    //         return;
+
+    //     // ------------------ 타겟팅 모드 처리 ------------------
+    //     // 🚨 [수정 적용] WaitingForCardTarget을 사용하여 오류 해결 🚨
+    //     if (GameManager.Instance.CurrentState == GameManager.GameState.WaitingForCardTarget)
     //     {
+    //         // 타겟팅 모드라면, 이 카드를 목표물로 지정하고 효과를 실행합니다.
+    //         GameManager.Instance.ResolveTargeting(CardID);
+
+    //         return;
+    //     }
+    //     // ------------------ 일반 카드 사용 처리 ------------------
+    //     else if (GameManager.Instance.CurrentState == GameManager.GameState.PlayerTurn_ActionPhase)
+    //     {
+    //         // 일반 카드 사용을 HandManager에게 요청합니다.
     //         HandManager.Instance.TryUseCard(CardID);
-    //         Debug.Log($"[Input] {CardID} 카드 사용 요청.");
+    //         Debug.Log($"[Input] {CardID} 카드 사용 요청 (PointerClick).");
     //     }
     // }
 }

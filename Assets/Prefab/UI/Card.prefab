@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 5053172465098638285}
   - component: {fileID: 3328445892911929029}
   - component: {fileID: 2215042076955213220}
-  - component: {fileID: 2578667490916411308}
+  - component: {fileID: 8653177281881913967}
+  - component: {fileID: 7443354663338407884}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -92,7 +93,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2578667490916411308
+--- !u!114 &8653177281881913967
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,10 +110,25 @@ MonoBehaviour:
     m_SubObjectName: 
     m_SubObjectType: 
     m_SubObjectGUID: 
-    m_EditorAssetChanged: 1
+    m_EditorAssetChanged: 0
   hoverui: {fileID: 7218716670761756673}
   hoverimage: {fileID: 5569313551458765039}
   sacleamount: 3
+  ishovering: 0
+  cardid: 
+--- !u!114 &7443354663338407884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1307972214170473849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b6ab834c4305c4195a239886fb47e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CardID: 
 --- !u!1 &5569313551458765039
 GameObject:
   m_ObjectHideFlags: 0
