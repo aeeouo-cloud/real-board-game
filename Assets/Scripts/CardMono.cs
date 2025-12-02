@@ -40,15 +40,18 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         hoverimage.transform.localPosition = pos;
     }
     void ActionAdd()
-    {   
-        Deck.LastCardCancel -= Deck.instance.LastActive;
-        Action ActiveThis = () =>
+    {
+        if (Deck.instance != null)
         {
-        Debug.Log("LastcardActived");
-        this.gameObject.SetActive(true);
-        };
-        Deck.instance.LastActive = ActiveThis;
-        Deck.LastCardCancel += Deck.instance.LastActive;
+            Deck.LastCardCancel -= Deck.instance.LastActive;
+            Action ActiveThis = () =>
+            {
+                Debug.Log("LastcardActived");
+                this.gameObject.SetActive(true);
+            };
+            Deck.instance.LastActive = ActiveThis;
+            Deck.LastCardCancel += Deck.instance.LastActive;
+        }
     }
     public void OnEndDrag(PointerEventData eventData)
     {

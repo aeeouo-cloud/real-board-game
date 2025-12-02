@@ -14,7 +14,7 @@ public class Map : MonoBehaviour
     public int widthlength = 0; //그리드 반지름 길이
     Dictionary<Vector2Int, Hex> hexdic = new Dictionary<Vector2Int, Hex>();
     GameObject Hex;
-    bool isready;
+    public bool isready;
     void Awake()
     {
         if(instance == null) instance = this;
@@ -58,13 +58,13 @@ public class Map : MonoBehaviour
         isready = true;
         Hex = null;
     }
-    public Hex GetHex(Vector2Int cord)
+    public Hex GetHexAt(Vector2Int coord)
     {
         if (!isready)
         {
             throw new System.Exception("Map not ready");
         }
-        return hexdic[cord];
+        return hexdic[coord];
     }
     static readonly Vector2Int[] hexDirections = new Vector2Int[]
     {

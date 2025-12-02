@@ -33,7 +33,7 @@ public class Deck : MonoBehaviour   //in game deck data
 
         LastCardCancel += () => {Debug.Log("lastcardcancel called");};
         //playerdeck.Load();    //이거 인스턴스화 해서 로드해야함. 프리펩 그대로 쓰면 프리펩 바뀜
-        //idlist = playerdeck.playerdecklist;
+        // idlist = playerdeck.playerdecklist;
     }
     async Task Loadasset()
     {
@@ -90,5 +90,10 @@ public class Deck : MonoBehaviour   //in game deck data
     void OnDestroy()
     {
         LastCardCancel = null;
+
+        if (instance == this)
+        {
+            instance = null; // 인스턴스가 파괴될 때 정적 필드를 null로 비워줘야 해!
+        }
     }
 }

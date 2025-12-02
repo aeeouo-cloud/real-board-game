@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
+[RequireComponent(typeof(NetworkObject))]
 public class NetworkPlayer : NetworkBehaviour
 {
     NetworkVariable<int> num = new (0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);

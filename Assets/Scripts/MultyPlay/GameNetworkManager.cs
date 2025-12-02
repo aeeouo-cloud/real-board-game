@@ -3,6 +3,7 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+[RequireComponent(typeof(NetworkObject))]
 public class GameNetworkManager : NetworkBehaviour
 {
     public event Action<ulong> OnTurnChanged;

@@ -2,9 +2,11 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 
+[RequireComponent(typeof(NetworkObject))]
 public class MultyUnit : NetworkBehaviour
 {
     public event Action<Vector2Int, Vector2Int> OnPosChanged;
+    Unit unit;
     public NetworkVariable<Vector2Int> UnitPos = new NetworkVariable<Vector2Int>
     (
         default,
@@ -20,7 +22,11 @@ public class MultyUnit : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
+        unit = GetComponent<Unit>();
+        if (!IsOwner)
+        {
+            Destroy(unit);
+        }
         UnitPos.OnValueChanged += HandlePosChange;
     }
     void HandlePosChange(Vector2Int previousValue, Vector2Int newValue)
