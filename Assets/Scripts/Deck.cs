@@ -63,8 +63,8 @@ public class Deck : MonoBehaviour   //in game deck data
         {
             int rand = UnityEngine.Random.Range(0, idlist.Count);
             GameObject nextcard = newhand.transform.GetChild(cardindex).gameObject;
-            nextcard.SetActive(true);
             nextcard.GetComponent<CardMono>().cardid = idlist[rand];
+            nextcard.SetActive(true);
             GameManager.Instance.PlayerHand.Add(idlist[rand]);
             idlist.RemoveAt(rand);
         }

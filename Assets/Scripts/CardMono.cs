@@ -3,33 +3,50 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 
 public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler //using card, card image generate script
 {
     public AssetReferenceGameObject dropbound;
-    GameObject bound;
+    static AsyncOperationHandle<GameObject> loadhandle;
+    static GameObject boundcach;
     static GameObject boundinstance;
+    static int referencecount = 0;
     public GameObject hoverui;
     public GameObject hoverimage;
     Vector3 originalscale;
+    Canvas imagecanvas;
     public float sacleamount = 3f;
     public bool ishovering = false;
-    RectTransform rt;
     public string cardid;
     void Awake()
     {
-        dropbound.LoadAssetAsync<GameObject>().Completed += handle =>
+        referencecount ++;
+        if(boundcach != null || referencecount > 1)
         {
-            if (handle.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+            return;
+        }
+        loadhandle = dropbound.LoadAssetAsync<GameObject>();
+        loadhandle.Completed += handle =>
+        {
+            if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                bound = handle.Result;
+                boundcach = handle.Result;
+                if(boundinstance == null)
+                {
+                boundinstance = Instantiate(boundcach, CanvasManager.canvas.GetComponent<RectTransform>(), false);                    
+                }
             }
             else
             {
                 Debug.Log("failed to load bound prefab");
             }
         };
+    }
+    void OnEnable()
+    {
+        hoverimage.GetComponent<CardImage>().UpdateImage(cardid);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -111,32 +128,31 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
         }
         hoverimage.transform.position = transform.position;
     }
-    void Start()
-    {
-        rt = hoverui.GetComponent<RectTransform>();
-        StartCoroutine(InstantiateBound());
-    }
-    private IEnumerator InstantiateBound() //wait for load
-    {
-        while (bound == null)
-        {
-            yield return null;
-        }
-        if (boundinstance == null)
-        {
-            boundinstance = Instantiate(bound,CanvasManager.canvas.GetComponent<RectTransform>(),false);
-        }
-    }
+    // private IEnumerator InstantiateBound() //wait for load
+    // {
+    //     while (bound == null)
+    //     {
+    //         yield return null;
+    //     }
+    //     if (boundinstance == null)
+    //     {
+    //         boundinstance = Instantiate(bound,CanvasManager.canvas.GetComponent<RectTransform>(),false);
+    //     }
+    // }
     // Update is called once per frame
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         originalscale = hoverimage.transform.localScale;
         hoverimage.transform.localScale = new Vector3(sacleamount, sacleamount, sacleamount);
-        hoverimage.transform.SetAsLastSibling();
+        imagecanvas = hoverimage.GetComponent<Canvas>();
+        imagecanvas.overrideSorting = true;
+        imagecanvas.sortingOrder = 50;
     }
     public void OnPointerExit(PointerEventData eventData)
     {
+        imagecanvas.overrideSorting = false;
+        imagecanvas.sortingOrder = 0;
         hoverimage.transform.localScale = originalscale;
     }   
 }

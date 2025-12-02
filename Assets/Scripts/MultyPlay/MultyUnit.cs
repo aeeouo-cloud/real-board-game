@@ -25,7 +25,8 @@ public class MultyUnit : NetworkBehaviour
         unit = GetComponent<Unit>();
         if (!IsOwner)
         {
-            Destroy(unit);
+            unit.Type = Unit.UnitType.Enemy;
+            Destroy(GetComponent<Move>());
         }
         UnitPos.OnValueChanged += HandlePosChange;
     }

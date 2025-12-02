@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour
     // UI Feedback 필드
     [Header("UI Feedback")]
     public GameObject CostWarningPanel;
+    public GameObject CostPanel;
 
     // 이동 테스트 변수 및 함수
     public int TestMoveDistance = 2;
@@ -711,6 +712,11 @@ public class GameManager : MonoBehaviour
         {
             CostWarningPanel.SetActive(false);
         }
+    }
+    void Update()
+    {
+        var panel = CostPanel.GetComponent<TextMeshProUGUI>();
+        panel.text = new string("현재 코스트 - " + CurrentCost);
     }
 
     // ---------------------- 승패 판정 로직 ----------------------

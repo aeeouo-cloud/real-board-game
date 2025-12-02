@@ -1,11 +1,11 @@
 // CardData.cs
 using System;
-using UnityEngine; // Unity¿¡¼­ »ç¿ëÇÏ±â À§ÇØ Æ÷ÇÔ
+using UnityEngine; // Unityì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ í¬í•¨
 
 [Serializable]
-public class CardData // ÆÄÀÏ¸í: CardData.cs
+public class CardData // íŒŒì¼ëª…: CardData.cs
 {
-    // CSV Çì´õ¿Í ÀÏÄ¡ÇÏ´Â ÇÊµå (¸ğµç ½ºÅÈ ÇÊµå Æ÷ÇÔ)
+    // CSV í—¤ë”ì™€ ì¼ì¹˜í•˜ëŠ” í•„ë“œ (ëª¨ë“  ìŠ¤íƒ¯ í•„ë“œ í¬í•¨)
     public string card_ID;
     public string type;
     public string @class;
@@ -14,7 +14,7 @@ public class CardData // ÆÄÀÏ¸í: CardData.cs
     public string cost;
     public string EffectGroup_ID;
 
-    // ½ºÅÈ ÇÊµå (CSV¿¡¼­ Int·Î º¯È¯µÉ ¿¹Á¤)
+    // ìŠ¤íƒ¯ í•„ë“œ (CSVì—ì„œ Intë¡œ ë³€í™˜ë  ì˜ˆì •)
     public int Range;
     public int Damage;
     public int Slow;

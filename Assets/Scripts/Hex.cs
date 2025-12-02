@@ -22,6 +22,6 @@ public class Hex : MonoBehaviour
 
     void Update()
     {
-        rend.material.color = isselectable ? Color.red : Color.green;
+        rend.material.color = isselectable ? Color.red : Color.white;
     }
 }

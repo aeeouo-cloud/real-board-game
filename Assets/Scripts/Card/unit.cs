@@ -43,11 +43,12 @@ public class Unit : MonoBehaviour
     public event Action<Unit> OnUnitDeath;
 
     Move move;
-    // MultyUnit multyunit; // 이 변수는 사용하지 않으므로 제거
+    MultyUnit multyunit;
 
     void Awake()
     {
         CurrentHP = MaxHP; // Awake에서 HP 초기화 (Start보다 먼저)
+        multyunit = GetComponent<MultyUnit>();
     }
     
     void Start()

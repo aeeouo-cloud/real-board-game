@@ -3,10 +3,11 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+
 [RequireComponent(typeof(NetworkObject))]
 public class GameNetworkManager : NetworkBehaviour
 {
-    public event Action<ulong> OnTurnChanged;
+    public event Action<ulong> NetOnTurnChanged;
     static  List<ulong> ConnectedClientsID => NetworkManager.Singleton.ConnectedClientsIds.ToList();
     GameManager gameManager;
     private readonly NetworkVariable<ulong> CurrentTurnClientId = new NetworkVariable<ulong>
@@ -30,7 +31,7 @@ public class GameNetworkManager : NetworkBehaviour
     }
     void HandleTurnChange(ulong prev, ulong current)
     {
-        OnTurnChanged?.Invoke(current);
+        NetOnTurnChanged?.Invoke(current);
     }
     [ServerRpc]
     public void EndTurnServerRpc()
