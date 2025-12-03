@@ -90,11 +90,6 @@ public class GameManager : MonoBehaviour
 
         NetworkObject networkturn = this.GetComponent<NetworkObject>();
         networkturn.Spawn();
-
-        if(gameNetworkManager != null)
-        {
-            
-        }
     }
     
     // 🚨 [핵심 수정] CurrentCost에 값을 할당하는 유일한 함수 (중복 제거) 🚨
@@ -167,7 +162,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("[Unit Placement] 맵 준비 완료 후 유닛 배치 완료.");
     }
 
-    private void InitializeDeckForTest()
+    private void InitializeDeckForTest()        // 이제 메모리에서 덱을 가져옵니다. 사용하지 않지만 냅둡니다.
     {
         if (DataManager.Instance == null)
         {
@@ -207,7 +202,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         Debug.Log("--- 게임 시작: 초기 핸드 드로우 ---");
-        InitializeDeckForTest();
+        //InitializeDeckForTest();
         ProcessDraw(InitialDrawAmount);
 
         // 🚨 [수정] 유닛 배치를 코루틴으로 감싸 Map 생성을 기다립니다. 🚨
