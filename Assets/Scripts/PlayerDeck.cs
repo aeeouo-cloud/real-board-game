@@ -24,6 +24,7 @@ public class PlayerDeck : ScriptableObject  //out game deck data gemerate, commu
       if (System.IO.File.Exists(playerdeckpath))
       {
          var json = System.IO.File.ReadAllText(playerdeckpath);
+         Debug.Log(json);
          var data = JsonUtility.FromJson<SaveData>(json);
          playerdecklist = data.saveplayerdecklist ?? new List<string>();
       }

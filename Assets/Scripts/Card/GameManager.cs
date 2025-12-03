@@ -42,7 +42,6 @@ public class GameManager : MonoBehaviour
     private readonly int[] CustomDiceFaces = new int[] { 1, 1, 1, 2, 2, 3 };
 
     // 덱/핸드 변수
-    public List<string> PlayerDeck = new List<string>();
     public List<string> PlayerHand = new List<string>();
     public List<string> PlayerDiscard = new List<string>();
     public List<string> EnemyHand = new List<string>();
@@ -53,7 +52,6 @@ public class GameManager : MonoBehaviour
 
     // 타겟팅 상태 저장 변수
     public string TargetingCardID { get; private set; }
-
 
     // UI Feedback 필드
     [Header("UI Feedback")]
@@ -170,7 +168,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        PlayerDeck.Clear();
+        Deck.instance.idlist.Clear();
         if (DataManager.Instance.CardTable.Count == 0)
         {
             Debug.LogWarning("DataManager의 CardTable에 로드된 카드가 없습니다. CSV 파일을 확인해주세요.");
@@ -179,11 +177,10 @@ public class GameManager : MonoBehaviour
 
         foreach (var pair in DataManager.Instance.CardTable)
         {
-            PlayerDeck.Add(pair.Key);
+            Deck.instance.idlist.Add(pair.Key);
         }
-        ShuffleDeck(PlayerDeck);
-        Debug.Log($"[Deck Initialized] {PlayerDeck.Count}장의 카드로 덱 초기화 완료.");
-        Deck.instance.idlist = PlayerDeck;
+        ShuffleDeck(Deck.instance.idlist);
+        Debug.Log($"[Deck Initialized] {Deck.instance.idlist.Count}장의 카드로 덱 초기화 완료.");
     }
 
     private void ShuffleDeck(List<string> list)
@@ -451,9 +448,9 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < amount; i++)
         {
-            PlayerDeck.Add(cardID);
+            Deck.instance.idlist.Add(cardID);
         }
-        ShuffleDeck(PlayerDeck);
+        ShuffleDeck(Deck.instance.idlist);
         Debug.Log($"[Deck] {cardID} 카드 {amount}장을 덱에 추가했습니다.");
     }
 
@@ -492,13 +489,9 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < amount; i++)
         {
-            if (PlayerDeck.Count > 0)
+            if (Deck.instance.idlist.Count > 0)
             {
-                string cardID = PlayerDeck[0];
-                PlayerDeck.RemoveAt(0);
-                PlayerHand.Add(cardID);
                 Deck.instance.DrawCard(); // Deck.instance에 DrawCard가 정의되지 않아 주석 처리
-                Debug.Log($"[Draw System] {cardID} 카드 드로우. 남은 덱: {PlayerDeck.Count}, 현재 손패: {PlayerHand.Count}");
             }
             else
             {
