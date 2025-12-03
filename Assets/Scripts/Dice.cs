@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class Dice : MonoBehaviour   //dice throw, calculate logic
@@ -32,6 +33,7 @@ public class Dice : MonoBehaviour   //dice throw, calculate logic
 
     void OnMouseDown()
     {
+        Debug.Log("mouse downed wow");
         if (canclick == true)   //prevent reclick 
         {
             rb.AddForce(randomDir * force, ForceMode.Impulse);
@@ -66,7 +68,7 @@ public class Dice : MonoBehaviour   //dice throw, calculate logic
             hasrun = false;
             Debug.Log("dice stoped dice = " + CalculateDice());
             turnmanager.GetDiceResult(CalculateDice());
-            Destroy(gameObject,2f);
+            turnmanager.destroyinstance(GetComponent<NetworkObject>().NetworkObjectId);
         }
     }
 }

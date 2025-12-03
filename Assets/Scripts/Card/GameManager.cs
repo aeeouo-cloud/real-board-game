@@ -10,6 +10,7 @@ using Unity.Netcode;
 public class GameManager : MonoBehaviour
 {
     GameNetworkManager gameNetworkManager; // 팀원의 변수 유지
+    SelectInput selectInput;
     public static GameManager Instance;
     public Unit PlayerUnit;
     public GameObject TrapPrefab;
@@ -57,7 +58,6 @@ public class GameManager : MonoBehaviour
     // UI Feedback 필드
     [Header("UI Feedback")]
     public GameObject CostWarningPanel;
-    public GameObject CostPanel;
 
     // 이동 테스트 변수 및 함수
     public int TestMoveDistance = 2;
@@ -81,6 +81,7 @@ public class GameManager : MonoBehaviour
         else Destroy(gameObject);
         
         gameNetworkManager = GetComponent<GameNetworkManager>();
+        selectInput = GetComponent<SelectInput>();
         // Netcode 초기화 로직은 그대로 유지
     }
     void HandleServerStarted()
@@ -579,11 +580,6 @@ public class GameManager : MonoBehaviour
         {
             CostWarningPanel.SetActive(false);
         }
-    }
-    void Update()
-    {
-        var panel = CostPanel.GetComponent<TextMeshProUGUI>();
-        panel.text = new string("현재 코스트 - " + CurrentCost);
     }
 
     // ---------------------- 승패 판정 로직 ----------------------

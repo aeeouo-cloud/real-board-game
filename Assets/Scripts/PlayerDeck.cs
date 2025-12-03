@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerDeck : ScriptableObject  //out game deck data gemerate, communication
 {
    public List<string> playerdecklist = new List<string>();
-   static public string playerdeckpath => Path.Combine(Application.persistentDataPath + "/playerdeckdata.json");
+   static public string playerdeckpath => Path.Combine(Application.persistentDataPath, "playerdeckdata.json");
    
    [System.Serializable]
    public class SaveData

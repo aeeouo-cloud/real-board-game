@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -8,22 +10,6 @@ public class TurnManager : MonoBehaviour
     public AssetReferenceGameObject diceprefab;
     public GameManager gameManager;
     public GameObject dice;
-
-    void Awake()
-    {
-        diceprefab.LoadAssetAsync<GameObject>().Completed += handle =>
-        {
-            if (handle.Status == AsyncOperationStatus.Succeeded)
-            {
-                dice = handle.Result;
-                Debug.Log("Dice prefab loaded successfully!");
-            }
-            else
-            {
-                Debug.LogError("Failed to load dice prefab!");
-            }
-        };
-    }
 
     void OnEnable()
     {
@@ -45,7 +31,8 @@ public class TurnManager : MonoBehaviour
     public void CallTurn()
     {
         // 턴 시작 시 주사위 굴림 코루틴 시작
-        StartCoroutine(CallTurnCoroutine());
+        Debug.Log($"calltrun activated what??? {diceprefab.RuntimeKey}");
+        StartCoroutine(DiceStart());
     }
     public void GetDiceResult(int result)
     {
@@ -56,17 +43,26 @@ public class TurnManager : MonoBehaviour
     {
         gameManager.EndPlayerTurn();
     }
-    private IEnumerator CallTurnCoroutine() //wait for load
+    private IEnumerator DiceStart()
     {
-        while (dice == null)
-        {
-            yield return null;
+        TurnNet turnNet = GetComponent<TurnNet>();
+
+        if(turnNet != null)
+        {   
+            while(turnNet.IsSpawned == false)
+            {
+                yield return null;
+            }
+            turnNet.SpawnObjectWithOwnerServerRpc(diceprefab.RuntimeKey.ToString());
         }
-        GameObject newdice = Instantiate(dice, new Vector3(0, 8, 0), Quaternion.identity);
-        newdice.GetComponent<Dice>().turnmanager = this.GetComponent<TurnManager>();
     }
     void OnDestroy()
     {
         dice = null;
+    }
+    public void destroyinstance(ulong netObjectid)
+    {
+        TurnNet turnNet = GetComponent<TurnNet>();
+        turnNet.DestroyTargetServerRpc(netObjectid);
     }
 }
