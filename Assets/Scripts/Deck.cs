@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -32,8 +33,8 @@ public class Deck : MonoBehaviour   //in game deck data
         );
 
         LastCardCancel += () => {Debug.Log("lastcardcancel called");};
-        //playerdeck.Load();    //이거 인스턴스화 해서 로드해야함. 프리펩 그대로 쓰면 프리펩 바뀜
-        // idlist = playerdeck.playerdecklist;
+        playerdeck.Load();
+        idlist = playerdeck.playerdecklist.ToList();
     }
     async Task Loadasset()
     {
