@@ -114,6 +114,7 @@ public class Move : MonoBehaviour
                         {
                             this.transform.position = hit.transform.position;
                             unit.CurrentPosition = hexComponent.qr; // 👈 이 시점에 Unit.cs의 setter가 호출되고 위치가 동기화됩니다.
+                            unit.RpcInvoke(hexComponent.qr);    //네트워크에 동기화
 
                             if (currentmode == MoveMode.CostMove)
                             {

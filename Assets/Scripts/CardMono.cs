@@ -104,6 +104,7 @@ public class CardMono : MonoBehaviour, IEndDragHandler, IDragHandler, IPointerEn
                 if (!CardEffectResolver.Instance.IsActionValid(cardid))
                 {
                     GameManager.Instance.ShowWarning("사용 불가: 유효한 타겟이 사거리 내에 없습니다!");
+                    hoverimage.transform.position = transform.position;
                     return; // 코스트 소모 및 효과 실행을 막습니다.
                 }
             }

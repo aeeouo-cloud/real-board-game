@@ -79,7 +79,8 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
         else Destroy(gameObject);
-
+        
+        gameNetworkManager = GetComponent<GameNetworkManager>();
         // Netcode 초기화 로직은 그대로 유지
     }
     void HandleServerStarted()
@@ -160,10 +161,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
-
-        // 맵이 준비된 후 유닛 배치 로직을 실행합니다.
-        PlacePlayerUnitOnMap();
-        PlaceEnemyUnitOnMap(); 
+        // 유닛 배치는 씬에서 완료합니다. 시간이 없어요
         
         Debug.Log("[Unit Placement] 맵 준비 완료 후 유닛 배치 완료.");
     }
@@ -215,121 +213,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(WaitForMapPlacement());
 
         CurrentState = GameState.PlayerTurn_BaseActions;
-        StartPlayerTurn();
     }
-
-    // 🚨 [핵심 수정] Player Unit 배치 로직 - 맵 중앙 (0,0) 타일 옆에 배치 🚨
-    private void PlacePlayerUnitOnMap()
-    {
-        if (PlayerUnit == null)
-        {
-            Debug.LogError("[Unit Placement] PlayerUnit이 Inspector에 연결되지 않았습니다. 배치 실패.");
-            return;
-        }
-        
-        // 🚨 [수정] 배치 전 Transform 초기화 및 부모 제거 🚨
-        PlayerUnit.transform.parent = null; 
-        PlayerUnit.transform.position = Vector3.zero;
-
-        Hex[] hexTiles = FindObjectsByType<Hex>(FindObjectsSortMode.None);
-        
-        Hex startHex = hexTiles.FirstOrDefault(h => h.qr == new Vector2Int(1, 0)); // 플레이어 시작점 (1, 0)
-        Hex centerHex = hexTiles.FirstOrDefault(h => h.qr == new Vector2Int(0, 0)); // 중앙 타일 (0, 0)
-
-        if (startHex != null)
-        {
-            Vector3 startPosition = startHex.transform.position;
-            
-            // 🚨 [수정] Y축 오프셋 0.6f로 조정 (유닛이 맵 표면에 붙도록) 🚨
-            PlayerUnit.transform.position = startPosition + new Vector3(0f, 0.6f, 0f);
-
-            // 유닛의 논리적 위치 (CurrentPosition)도 초기화합니다.
-            PlayerUnit.CurrentPosition = startHex.qr;
-
-            // 🚨 [핵심 추가] Move 스크립트를 찾아 시각적 위치를 강제 업데이트 🚨
-            Move moveComp = PlayerUnit.GetComponent<Move>();
-            if (moveComp != null)
-            {
-                moveComp.SynchronizeWorldPosition(); 
-            }
-            // -------------------------------------------------------------
-
-            Debug.Log($"[Unit Placement] PlayerUnit이 타일 {startHex.qr}에 배치되었습니다.");
-        }
-        else if (centerHex != null)
-        {
-            // 중앙 타일 옆 타일을 못 찾으면 중앙 타일에 배치 (Fallback)
-            Vector3 startPosition = centerHex.transform.position;
-            PlayerUnit.transform.position = startPosition + new Vector3(0f, 0.6f, 0f);
-            PlayerUnit.CurrentPosition = centerHex.qr;
-            
-            // 🚨 [핵심 추가] Move 스크립트를 찾아 시각적 위치를 강제 업데이트 🚨
-            Move moveComp = PlayerUnit.GetComponent<Move>();
-            if (moveComp != null)
-            {
-                moveComp.SynchronizeWorldPosition(); 
-            }
-            
-            Debug.Log($"[Unit Placement] PlayerUnit이 중앙 타일 ({centerHex.qr})에 배치되었습니다. (Fallback)");
-        }
-        else
-        {
-            Debug.LogError("[Unit Placement] 맵 타일 오브젝트(Hex Component)를 씬에서 찾을 수 없습니다. 배치 실패.");
-        }
-    }
-
-    // 🚨 [수정] Enemy Unit 배치 로직 - 맵 중앙 (0, 0)에 배치 🚨
-    private void PlaceEnemyUnitOnMap()
-    {
-        Unit[] units = FindObjectsByType<Unit>(FindObjectsSortMode.None);
-        Unit enemyUnit = units.FirstOrDefault(u => u.Type == Unit.UnitType.Enemy);
-
-        if (enemyUnit == null)
-        {
-            Debug.LogWarning("[Unit Placement] Enemy Unit 오브젝트를 씬에서 찾을 수 없습니다. 적 배치 생략.");
-            return;
-        }
-        
-        // 🚨 [수정] 배치 전 Transform 초기화 및 부모 제거 🚨
-        enemyUnit.transform.parent = null;
-        enemyUnit.transform.position = Vector3.zero;
-
-        Hex[] hexTiles = FindObjectsByType<Hex>(FindObjectsSortMode.None);
-
-        // 맵 중앙(0, 0) 타일의 위치를 찾습니다.
-        Hex centerHex = hexTiles.FirstOrDefault(h => h.qr == new Vector2Int(0, 0));
-
-        if (centerHex != null)
-        {
-            Vector3 centerPosition = centerHex.transform.position;
-
-            // 유닛을 맵 중앙 타일 위치에 띄워 배치
-            // 🚨 [수정] Y축 오프셋 0.6f로 조정 🚨
-            enemyUnit.transform.position = centerPosition + new Vector3(0f, 0.6f, 0f);
-
-            enemyUnit.CurrentPosition = centerHex.qr;
-
-            // 🚨 [핵심 추가] Move 스크립트를 찾아 시각적 위치를 강제 업데이트 🚨
-            Move moveComp = enemyUnit.GetComponent<Move>();
-            if (moveComp != null)
-            {
-                moveComp.SynchronizeWorldPosition();
-            }
-            
-            Debug.Log($"[Unit Placement] EnemyUnit이 맵 중앙 타일 {centerHex.qr}에 배치되었습니다.");
-        }
-        else
-        {
-            Debug.LogError("[Unit Placement] 맵 중앙 타일(0, 0)을 찾을 수 없어 적 배치를 실패했습니다.");
-        }
-    }
-
 
     public void StartPlayerTurn()
     {
         if (CurrentState == GameState.GameEnd) return;
-
-        if (CurrentState == GameState.EnemyTurn || CurrentState == GameState.GameEnd) return;
 
         Debug.Log("--- 플레이어 턴 시작 ---");
         CurrentState = GameState.PlayerTurn_BaseActions;
@@ -378,28 +266,7 @@ public class GameManager : MonoBehaviour
         SetCurrentCost(0);
 
         CurrentState = GameState.EnemyTurn;
-        StartEnemyTurn();
-    }
-
-    private void StartEnemyTurn()
-    {
-        if (CurrentState == GameState.GameEnd) return;
-
-        Debug.Log("--- 적(Enemy) 턴 시작 ---");
-        CurrentState = GameState.EnemyTurn;
-        Invoke("EndEnemyTurn", 3f);
-    }
-
-    private void EndEnemyTurn()
-    {
-        if (CurrentState == GameState.GameEnd) return;
-
-        Debug.Log("--- 적(Enemy) 턴 종료 ---");
-
-        StatusEffectManager.Instance?.UpdateEffectsOnTurnEnd();
-
-        CurrentState = GameState.PlayerTurn_BaseActions;
-        StartPlayerTurn();
+        gameNetworkManager.EndTurnServerRpc();
     }
 
     // ---------------------- 타겟팅 로직 ----------------------

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
-using System.Linq; // FindObjectsByType 사용을 위해 추가
+using System.Linq;
+using Unity.Netcode; // FindObjectsByType 사용을 위해 추가
 
 public class Unit : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class Unit : MonoBehaviour
     public int CurrentHP = 20;
     
     // 🚨 [핵심 수정] pos는 Get/Set에서 내부적으로만 사용합니다. 🚨
-    private Vector2Int pos; 
+    public Vector2Int pos; 
     
     public Vector2Int CurrentPosition 
     {
@@ -27,13 +28,13 @@ public class Unit : MonoBehaviour
             // this.transform.position = Map.instance.GetHexAt(pos).transform.position; 
             
             // 2. Move 스크립트에 시각적 동기화를 요청합니다. (Map 준비 완료 후 Move.cs가 처리)
-            Move moveComp = this.GetComponent<Move>();
-            if (moveComp != null && moveComp.isActiveAndEnabled)
-            {
-                 // Move.cs의 SynchronizeWorldPosition을 호출하여 시각적 위치를 업데이트합니다.
-                 moveComp.SynchronizeWorldPosition(); 
-            }
-            
+            // Move moveComp = this.GetComponent<Move>();
+            // if (moveComp != null && moveComp.isActiveAndEnabled)
+            // {
+            //      // Move.cs의 SynchronizeWorldPosition을 호출하여 시각적 위치를 업데이트합니다.
+            //      moveComp.SynchronizeWorldPosition(); 
+            // }
+            if (Map.instance != null)transform.position = Map.instance.GetHexAt(pos).transform.position;
             // (Move.cs가 붙어있지 않거나 비활성화된 경우, 이 업데이트는 다음 프레임에 처리됩니다.)
         } 
     } // 맵의 위치 (타일 인덱스 등) unit의 좌표를 바꾸면 자동으로 해당 칸으로 이동합니다.
@@ -49,6 +50,10 @@ public class Unit : MonoBehaviour
     {
         CurrentHP = MaxHP; // Awake에서 HP 초기화 (Start보다 먼저)
         multyunit = GetComponent<MultyUnit>();
+    }
+    public void RpcInvoke(Vector2Int pos)
+    {
+        multyunit.UnitPosChangedServerRpc(pos, GetComponent<NetworkObject>().NetworkObjectId);
     }
     
     void Start()

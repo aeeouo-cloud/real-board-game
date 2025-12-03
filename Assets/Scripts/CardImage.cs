@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Mono.Cecil;
 
 public class CardImage : MonoBehaviour      //updateimage를 실행하면 카드 아이디에 맞게 알아서 카드 이미지를 만들어줄겁니다.
 {
@@ -17,7 +16,6 @@ public class CardImage : MonoBehaviour      //updateimage를 실행하면 카드
 
     public void UpdateImage(string Id)
     {
-        
         imageUI = image.GetComponent<Image>();
         desUI = des.GetComponent<TextMeshProUGUI>();
         nameUI = cardname.GetComponent<TextMeshProUGUI>();

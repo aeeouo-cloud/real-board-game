@@ -17,21 +17,81 @@ public class MultyUnit : NetworkBehaviour
     (
         default,
         NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
+        NetworkVariableWritePermission.Owner
     );
+    public NetworkVariable<ulong> AssignedOwnerId = new NetworkVariable<ulong>();
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         unit = GetComponent<Unit>();
+        AssignedOwnerId.OnValueChanged += SetupUnitMove;
+        if (IsOwner)
+        {
+            UnitHP.Value = unit.CurrentHP;
+            GetComponent<Move>().enabled = true;
+        }
+
         if (!IsOwner)
         {
             unit.Type = Unit.UnitType.Enemy;
-            Destroy(GetComponent<Move>());
+            GetComponent<Move>().enabled =false;
         }
         UnitPos.OnValueChanged += HandlePosChange;
+    }
+    public void SetGamemanagerUnit()
+    {
+        if (IsOwner)
+        {
+        GameManager.Instance.PlayerUnit = GetComponent<Unit>(); 
+        }
+
+    }
+    void SetupUnitMove(ulong prev, ulong current)
+    {
+        if(current == NetworkManager.Singleton.LocalClientId)
+        {
+            unit.Type = Unit.UnitType.Player;
+            GetComponent<Move>().enabled = true;
+        }
+        else
+        {
+            unit.Type = Unit.UnitType.Enemy;
+            GetComponent<Move>().enabled =false;
+        }
+        SetGamemanagerUnit();
     }
     void HandlePosChange(Vector2Int previousValue, Vector2Int newValue)
     {
         OnPosChanged.Invoke(previousValue,newValue);
     }
+
+    [Rpc (SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void UnitPosChangedServerRpc(Vector2Int pos, ulong objectId)
+    {
+        Debug.Log("send serverRpc poschange");
+        UnitPosChangedClientRpc(pos, objectId);
+    }
+    [Rpc (SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void HPReduceServerRpc()
+    {
+        
+    }
+    [ClientRpc]
+    public void UnitPosChangedClientRpc(Vector2Int pos, ulong changeobject , ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log("recieved client Rpc poschange");
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(changeobject, out NetworkObject targetNetObj))
+        {
+            targetNetObj.GetComponent<Unit>().CurrentPosition = pos;
+        }
+    }
+
+    [ClientRpc]
+    public void HPReduceClientRpc(int amount, ClientRpcParams clientRpcParams = default)
+    {
+        
+    }
+
+
 }
