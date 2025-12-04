@@ -79,6 +79,7 @@ public class Unit : MonoBehaviour
         }
 
         CurrentHP -= finalDamage;
+        multyunit.HPSyncServerRpc(CurrentHP);
 
         Debug.Log($"[Unit Logic] {UnitName}이 {finalDamage} 피해! (기본 피해: {baseDamage}) 남은 HP: {CurrentHP}");
         OnDamageTaken?.Invoke(this, finalDamage);
@@ -96,6 +97,7 @@ public class Unit : MonoBehaviour
         CurrentHP = Mathf.Min(MaxHP, CurrentHP + amount);
         Debug.Log($"[Unit Logic] {UnitName}이 {amount} 회복! 현재 HP: {CurrentHP}");
 
+        multyunit.HPSyncServerRpc(CurrentHP);
         OnHealed?.Invoke(this, amount);
     }
 

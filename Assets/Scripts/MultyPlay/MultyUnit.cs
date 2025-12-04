@@ -17,7 +17,7 @@ public class MultyUnit : NetworkBehaviour
     (
         default,
         NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Owner
+        NetworkVariableWritePermission.Server
     );
     public NetworkVariable<ulong> AssignedOwnerId = new NetworkVariable<ulong>();
 
@@ -73,9 +73,11 @@ public class MultyUnit : NetworkBehaviour
         UnitPosChangedClientRpc(pos, objectId);
     }
     [Rpc (SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void HPReduceServerRpc()
+    public void HPSyncServerRpc(int amount)
     {
-        
+        UnitHP.Value = amount;
+        unit.CurrentHP = UnitHP.Value;
+        HPSyncClientRpc(unit.CurrentHP);
     }
     [ClientRpc]
     public void UnitPosChangedClientRpc(Vector2Int pos, ulong changeobject , ClientRpcParams clientRpcParams = default)
@@ -88,10 +90,8 @@ public class MultyUnit : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void HPReduceClientRpc(int amount, ClientRpcParams clientRpcParams = default)
+    public void HPSyncClientRpc(int amount, ClientRpcParams clientRpcParams = default)
     {
-        
+        unit.CurrentHP = amount;
     }
-
-
 }
